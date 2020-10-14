@@ -13,7 +13,7 @@ import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.zipper.flowable.app.constant.FlowableConst;
+import org.zipper.flowable.app.constant.FlowableVariableKey;
 import org.zipper.flowable.app.constant.errors.FlowableError;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.helper.exception.HelperException;
@@ -72,7 +72,7 @@ public class FlowableServiceImpl implements FlowableService {
             throw HelperException.newException(FlowableError.PROCESS_DEFINITION_NOT_EXIST, "流程尚未部署");
         }
 
-        variables.put(FlowableConst.INITIATOR, initiator);
+        variables.put(FlowableVariableKey.INITIATOR, initiator);
         this.identityService.setAuthenticatedUserId(initiator);
         ProcessInstance instance = this.runtimeService.startProcessInstanceByKey(processKey, variables);
         this.identityService.setAuthenticatedUserId(null);

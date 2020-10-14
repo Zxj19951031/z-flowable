@@ -19,6 +19,6 @@ public class UserTaskCreateListener implements TaskListener {
 
     @Override
     public void notify(DelegateTask delegateTask) {
-        LOGGER.debug("user task created!");
+        LOGGER.debug("user:[{}] task created!", delegateTask.getAssignee());
     }
 }

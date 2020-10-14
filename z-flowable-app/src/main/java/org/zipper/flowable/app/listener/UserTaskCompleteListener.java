@@ -1,5 +1,7 @@
 package org.zipper.flowable.app.listener;
 
+import org.flowable.engine.delegate.DelegateExecution;
+import org.flowable.engine.delegate.ExecutionListener;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.task.service.delegate.DelegateTask;
 import org.slf4j.Logger;
@@ -29,10 +31,8 @@ public class UserTaskCompleteListener implements TaskListener {
      */
     @Override
     public void notify(DelegateTask delegateTask) {
-        delegateTask.getVariables().forEach((k, v) -> System.out.println(k + ":" + v));
-        System.out.println("--------------");
-        delegateTask.getVariablesLocal().forEach((k, v) -> System.out.println(k + ":" + v));
 
-        LOGGER.debug("user task completed!");
+        LOGGER.debug("user:[{}] task completed!", delegateTask.getAssignee());
     }
+
 }
