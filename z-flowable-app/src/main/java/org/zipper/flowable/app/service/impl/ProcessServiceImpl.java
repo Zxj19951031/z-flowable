@@ -1,5 +1,7 @@
 package org.zipper.flowable.app.service.impl;
 
+import org.flowable.engine.repository.Deployment;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.zipper.flowable.app.service.ProcessService;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhuxj
@@ -20,11 +23,10 @@ import java.util.List;
 @Service
 public class ProcessServiceImpl implements ProcessService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessService.class);
 
     @Resource
     private FlowableService flowableService;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessService.class);
 
     /**
      * @param id   流程定义ID，可为空，非空即更新
@@ -50,7 +52,7 @@ public class ProcessServiceImpl implements ProcessService {
 
         LOGGER.debug("新增/编辑并发布流程{}\n{}", name, xml);
 
-        this.flowableService.deploy(name, xml);
+        Deployment deployment = this.flowableService.deploy(name, xml);
 
         return id;
     }
@@ -78,6 +80,20 @@ public class ProcessServiceImpl implements ProcessService {
         LOGGER.debug("删除记录");
 
         return false;
+    }
+
+    /**
+     * @param initiator  发起人
+     * @param processKey 流程定义key即xml中process标签的id属性
+     * @param variables  流程变量
+     * @return true or false
+     */
+    @Override
+    public boolean initiate(String initiator, String processKey, Map<String, Object> variables) {
+
+        ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
+        LOGGER.debug("创建流程实例 [{}] 成功", instance.getName());
+        return true;
     }
 
 }

@@ -1,12 +1,12 @@
 package org.zipper.flowable.app.service;
 
 
-import org.springframework.transaction.annotation.Transactional;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.entity.Process;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 流程定义服务
@@ -54,4 +54,14 @@ public interface ProcessService {
      * @return true or false
      */
     boolean delete(ArrayList<Integer> ids);
+
+
+    /**
+     * 发起流程
+     *  @param initiator  发起人
+     * @param processKey 流程定义key即xml中process标签的id属性
+     * @param variables  流程变量
+     * @return true or false
+     */
+    boolean initiate(String initiator, String processKey, Map<String, Object> variables);
 }

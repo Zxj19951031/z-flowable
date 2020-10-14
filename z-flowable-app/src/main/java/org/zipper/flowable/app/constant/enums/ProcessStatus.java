@@ -1,7 +1,13 @@
 package org.zipper.flowable.app.constant.enums;
 
 public enum ProcessStatus {
+    /**
+     *未发布
+     */
     unpublished(1),
+    /**
+     * 已发布
+     */
     published(2);
 
     private final int value;

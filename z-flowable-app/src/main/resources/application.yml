@@ -2,7 +2,7 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/z-flowable?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=false
+    url: jdbc:mysql://localhost:3306/z-flowable?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=false&nullCatalogMeansCurrent=true
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver

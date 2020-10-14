@@ -1,25 +1,81 @@
 package org.zipper.flowable.app.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.zipper.flowable.app.dto.ProcessInitiateParameter;
+import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
 
-import java.util.HashMap;
+import javax.annotation.Resource;
 
+/**
+ * 我的流程实例
+ *
+ * @author zhuxj
+ * @since 2020/10/13
+ */
 @RestController
 @RequestMapping(value = "myProcess")
 public class MyProcessController {
 
+    @Resource
+    private ProcessService processService;
+
     /**
      * 发起流程
      *
-     * @param variables 流程变量
-     * @return
+     * @param parameter 流程变量
+     * @return true or false
      */
     @PostMapping(value = "initiate")
-    public ResponseEntity initiate(@RequestBody HashMap<String, Object> variables) {
+    public ResponseEntity<Boolean> initiate(@RequestBody ProcessInitiateParameter parameter) {
+
+        String initiator = "zhuxj";
+        boolean result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
+        return ResponseEntity.success(result);
+    }
+
+    /**
+     * 我发起的
+     * 分页查询
+     *
+     * @param pageSize 单页大小
+     * @param pageNum  页码
+     * @return list of my instance
+     */
+    @PostMapping(value = "mine/list")
+    public ResponseEntity minePage(@RequestParam Integer pageSize,
+                                   @RequestParam Integer pageNum) {
+
+        return ResponseEntity.success(null);
+    }
+
+    /**
+     * 我的代办
+     * 分页查询
+     *
+     * @param pageSize 单页大小
+     * @param pageNum  页码
+     * @return list of todo instance
+     */
+    @PostMapping(value = "todo/list")
+    public ResponseEntity todoPage(@RequestParam Integer pageSize,
+                                   @RequestParam Integer pageNum) {
+
+        return ResponseEntity.success(null);
+    }
+
+
+    /**
+     * 我的经办
+     * 分页查询
+     *
+     * @param pageSize 单页大小
+     * @param pageNum  页码
+     * @return list of done instance
+     */
+    @PostMapping(value = "done/list")
+    public ResponseEntity donePage(@RequestParam Integer pageSize,
+                                   @RequestParam Integer pageNum) {
 
         return ResponseEntity.success(null);
     }

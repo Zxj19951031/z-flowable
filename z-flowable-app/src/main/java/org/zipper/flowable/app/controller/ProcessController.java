@@ -13,6 +13,13 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 流程定义管理
+ *
+ *
+ * @author zhuxj
+ * @since 2020/10/13
+ */
 @RestController
 @RequestMapping(value = "process")
 public class ProcessController {
@@ -47,7 +54,7 @@ public class ProcessController {
         return ResponseEntity.success(id);
     }
 
-    
+
     /**
      * 查看分页列表
      *
