@@ -1,4 +1,15 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: info
+    org.zipper.flowable.app: debug
+
 spring:
+  session:
+    store-type: redis
+    timeout: 3600
   profiles:
     active: dev
   datasource:
@@ -24,8 +35,12 @@ spring:
       maxPoolPreparedStatementPerConnectionSize: 20
       useGlobalDataSourceStat: true
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+  redis:
+    host: localhost
+    database: 0
+    password: 123456
+    port: 6379
+
 flowable:
   database-schema-update: true
-logging:
-  level:
-    org.zipper.flowable.app: debug
+

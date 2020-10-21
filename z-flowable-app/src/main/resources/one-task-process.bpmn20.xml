@@ -8,24 +8,31 @@
             <flowable:executionListener event="start"
                                         delegateExpression="${processStartExecutionListener}"/>
             <flowable:executionListener event="end"
-                                        delegateExpression="${processStartExecutionListener}"/>
+                                        delegateExpression="${processEndExecutionListener}"/>
         </extensionElements>
         <startEvent id="theStart" flowable:initiator="initiator"/>
-        <sequenceFlow sourceRef="theStart" targetRef="userTask1"/>
-        <userTask id="userTask1" name="User Task 1" flowable:assignee="${assignee}">
-            <extensionElements>
-                <flowable:taskListener event="create" delegateExpression="${userTaskCreateListener}"/>
-                <flowable:taskListener event="complete" delegateExpression="${userTaskCompleteListener}"/>
-            </extensionElements>
-            <multiInstanceLoopCharacteristics isSequential="false"
-                                              flowable:collection="user1,user2"
-                                              flowable:elementVariable="assignee">
-                <completionCondition>${nrOfCompletedInstances == nrOfInstances}</completionCondition>
-            </multiInstanceLoopCharacteristics>
-        </userTask>
-        <sequenceFlow sourceRef="userTask1" targetRef="serviceTask"/>
-        <serviceTask id="serviceTask" flowable:delegateExpression="${messageDelegate}"/>
-        <sequenceFlow sourceRef="serviceTask" targetRef="theEnd"/>
+        <sequenceFlow sourceRef="theStart" targetRef="exclusiveGateway"/>
+        <exclusiveGateway id="exclusiveGateway"/>
+        <sequenceFlow sourceRef="exclusiveGateway" targetRef="theEnd">
+            <conditionExpression>${var:gt(number1,10)}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow sourceRef="exclusiveGateway" targetRef="theEnd">
+            <conditionExpression>${var:lte(number1,10)}</conditionExpression>
+        </sequenceFlow>
+        <!--        <userTask id="userTask1" name="User Task 1" flowable:assignee="${assignee}">-->
+        <!--            <extensionElements>-->
+        <!--                <flowable:taskListener event="create" delegateExpression="${userTaskCreateListener}"/>-->
+        <!--                <flowable:taskListener event="complete" delegateExpression="${userTaskCompleteListener}"/>-->
+        <!--            </extensionElements>-->
+        <!--            <multiInstanceLoopCharacteristics isSequential="false"-->
+        <!--                                              flowable:collection="user1,user2"-->
+        <!--                                              flowable:elementVariable="assignee">-->
+        <!--                <completionCondition>${nrOfCompletedInstances == nrOfInstances}</completionCondition>-->
+        <!--            </multiInstanceLoopCharacteristics>-->
+        <!--        </userTask>-->
+        <!--        <sequenceFlow sourceRef="userTask1" targetRef="serviceTask"/>-->
+        <!--        <serviceTask id="serviceTask" flowable:delegateExpression="${messageDelegate}"/>-->
+        <!--        <sequenceFlow sourceRef="serviceTask" targetRef="theEnd"/>-->
         <endEvent id="theEnd"/>
     </process>
 </definitions>

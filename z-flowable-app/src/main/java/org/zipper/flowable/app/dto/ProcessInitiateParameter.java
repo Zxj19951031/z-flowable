@@ -8,7 +8,6 @@ import java.util.Map;
  */
 public class ProcessInitiateParameter {
 
-
     /**
      * 流程标识符
      * 即xml中process标签的id属性

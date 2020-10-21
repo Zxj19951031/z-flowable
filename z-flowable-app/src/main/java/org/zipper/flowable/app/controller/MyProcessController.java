@@ -2,6 +2,8 @@ package org.zipper.flowable.app.controller;
 
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.dto.ProcessInitiateParameter;
+import org.zipper.flowable.app.dto.TaskFinishParameter;
+import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
 
@@ -19,6 +21,8 @@ public class MyProcessController {
 
     @Resource
     private ProcessService processService;
+    @Resource
+    private FlowableService flowableService;
 
     /**
      * 发起流程
@@ -46,6 +50,8 @@ public class MyProcessController {
     public ResponseEntity minePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
+        String initiator = "zhuxj";
+        this.flowableService.queryMine(pageNum, pageSize, initiator);
         return ResponseEntity.success(null);
     }
 
@@ -60,7 +66,8 @@ public class MyProcessController {
     @PostMapping(value = "todo/list")
     public ResponseEntity todoPage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
-
+        String user = "zhuxj";
+        this.flowableService.queryTodo(pageNum, pageSize, user);
         return ResponseEntity.success(null);
     }
 
@@ -77,6 +84,23 @@ public class MyProcessController {
     public ResponseEntity donePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
+        String user = "zhuxj";
+        this.flowableService.queryDone(pageNum, pageSize, user);
+        return ResponseEntity.success(null);
+    }
+
+    /**
+     * 完成用户任务
+     *
+     * @param parameter 任务参数包含任务编号和流程参数等
+     * @return
+     * @see TaskFinishParameter
+     */
+    @PostMapping(value = "finish")
+    public ResponseEntity finish(@RequestBody TaskFinishParameter parameter) {
+
+        String user = "zhuxj";
+        this.flowableService.finishTask(user, parameter.getTaskId(), parameter.getLocalVariables());
         return ResponseEntity.success(null);
     }
 }

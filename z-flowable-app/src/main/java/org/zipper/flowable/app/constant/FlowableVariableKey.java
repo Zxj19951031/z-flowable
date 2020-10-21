@@ -24,5 +24,21 @@ public final class FlowableVariableKey {
      * 消息代理发送方式——短信发送
      */
     public static final String SMS = "sms";
+    /**
+     * 审批结果
+     */
+    public static final String APPROVE_RESULT = "approveResult";
+    /**
+     * 审批结果——通过
+     */
+    public static final String PASS = "pass";
+    /**
+     * 审批结果——拒绝
+     */
+    public static final String REJECT = "reject";
+    /**
+     * 审批结果——驳回至
+     */
+    public static final String redirect = "redirect";
 
 }
