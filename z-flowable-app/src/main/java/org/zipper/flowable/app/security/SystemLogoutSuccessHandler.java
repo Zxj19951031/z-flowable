@@ -13,6 +13,9 @@ import java.io.IOException;
 
 /**
  * 登出成功处理器
+ *
+ * @author zhuxj
+ * @since 2020/10/21
  */
 @Component
 public class SystemLogoutSuccessHandler implements LogoutSuccessHandler {
@@ -22,7 +25,7 @@ public class SystemLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         response.setContentType("application/json;charset=utf-8");
-
+        //删除token
         daoUserDetailService.removeToken(authentication.getName());
         response.getWriter().write(ResponseEntity.success("登出成功").toString());
         response.getWriter().flush();

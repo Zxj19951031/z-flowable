@@ -11,7 +11,9 @@ import org.zipper.helper.exception.IErrorCode;
 public enum SystemError implements IErrorCode {
     NOT_LOGIN(401,"用户未登录"),
     AUTHENTICATE_ERROR(401, "认证失败"),
-    ;
+    USERNAME_PASSWORD_ERROR(401,"用户名或密码错误"),
+    PARAMETER_ERROR(400,"缺失参数"),
+    UNKNOWN_ERROR(500, "未知异常");
 
     private final int code;
     private final String description;

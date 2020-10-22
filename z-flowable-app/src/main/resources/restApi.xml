@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+    <!-- 声明通知类 -->
+    <aop:aspectj-autoproxy/>
+
+    <bean id="controllerAop" class="org.zipper.flowable.app.aop.ControllerAop"/>
+
+    <aop:config>
+        <aop:aspect id="myAop" ref="controllerAop">
+            <aop:pointcut id="pointcut"
+                          expression="execution(public org.zipper.helper.web.response.ResponseEntity *(..))"/>
+            <aop:around method="handlerControllerMethod" pointcut-ref="pointcut"/>
+        </aop:aspect>
+    </aop:config>
+</beans>

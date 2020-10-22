@@ -41,4 +41,8 @@ spring:
 flowable:
   database-schema-update: true
 
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  configuration:
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
 

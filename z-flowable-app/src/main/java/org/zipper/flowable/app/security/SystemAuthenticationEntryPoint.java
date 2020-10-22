@@ -13,6 +13,9 @@ import java.io.IOException;
 
 /**
  * 认证开始入口
+ *
+ * @author zhuxj
+ * @since 2020/10/21
  */
 @Component
 public class SystemAuthenticationEntryPoint implements AuthenticationEntryPoint {

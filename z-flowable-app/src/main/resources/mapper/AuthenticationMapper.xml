@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.zipper.flowable.app.mapper.AuthenticationMapper">
+
+    <insert id="insert" parameterType="org.zipper.flowable.app.entity.Member" useGeneratedKeys="true" keyProperty="id">
+        insert into `z-flowable`.flow_authentication(username, password, create_time, update_time, status)
+        values (#{username}, #{password}, #{createTime}, #{updateTime}, #{status})
+    </insert>
+    <select id="selectByUsernameEqual" resultType="org.zipper.flowable.app.entity.Member"
+            parameterType="java.lang.String">
+        select id, username, password, create_time, update_time, status
+        from `z-flowable`.flow_authentication
+        where status = 0
+          and username = #{username}
+    </select>
+</mapper>
