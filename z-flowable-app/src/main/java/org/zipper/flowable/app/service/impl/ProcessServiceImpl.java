@@ -92,7 +92,7 @@ public class ProcessServiceImpl implements ProcessService {
     public boolean initiate(String initiator, String processKey, Map<String, Object> variables) {
 
         ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
-        LOGGER.debug("创建流程实例 [{}] 成功", instance.getName());
+        LOGGER.debug("用户[{}]发起流程 [{}] 成功", initiator, instance.getName());
         return true;
     }
 

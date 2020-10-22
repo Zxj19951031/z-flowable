@@ -10,15 +10,15 @@ public enum ProcessStatus {
      */
     published(2);
 
-    private final int value;
+    private final Integer value;
 
     ProcessStatus(int value) {
         this.value = value;
     }
 
-    public static ProcessStatus get(int value) {
+    public static ProcessStatus get(Integer value) {
         for (ProcessStatus processStatus : ProcessStatus.values()) {
-            if (processStatus.value == value) {
+            if (processStatus.value.equals(value)) {
                 return processStatus;
             }
         }

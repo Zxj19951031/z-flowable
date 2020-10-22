@@ -2,19 +2,20 @@ package org.zipper.flowable.app.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
-import org.zipper.flowable.app.security.access.SystemAccessDeniedHandler;
-import org.zipper.flowable.app.security.password.DaoPasswordEncoder;
-import org.zipper.flowable.app.security.userdetails.DaoUserDetailService;
-import org.zipper.flowable.app.security.web.SystemAuthenticationEntryPoint;
-import org.zipper.flowable.app.security.authentication.SystemAuthenticationSuccessHandler;
-import org.zipper.flowable.app.security.authentication.logout.SystemLogoutSuccessHandler;
-import org.zipper.flowable.app.security.authentication.SystemAuthenticationFailureHandler;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.zipper.flowable.app.security.form.FormAuthenticationFailureHandler;
+import org.zipper.flowable.app.security.form.FormAuthenticationSuccessHandler;
+import org.zipper.flowable.app.security.jwt.JwtAuthenticationConfigurer;
+import org.zipper.flowable.app.security.jwt.JwtAuthenticationFailureHandler;
+import org.zipper.flowable.app.security.jwt.JwtAuthenticationProvider;
+import org.zipper.flowable.app.security.jwt.JwtAuthenticationSuccessHandler;
 
 import javax.annotation.Resource;
 
@@ -24,63 +25,64 @@ import javax.annotation.Resource;
  */
 @Configuration
 @EnableWebSecurity
-@EnableRedisHttpSession
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Resource
-    private SystemAuthenticationEntryPoint systemAuthenticationEntryPoint;
+    private FormAuthenticationFailureHandler formAuthenticationFailureHandler;
     @Resource
-    private SystemAuthenticationFailureHandler systemAuthenticationFailureHandler;
+    private FormAuthenticationSuccessHandler formAuthenticationSuccessHandler;
     @Resource
-    private SystemAuthenticationSuccessHandler systemAuthenticationSuccessHandler;
+    private JwtAuthenticationFailureHandler jwtAuthenticationFailureHandler;
     @Resource
-    private SystemAccessDeniedHandler systemAccessDeniedHandler;
+    private JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     @Resource
     private SystemLogoutSuccessHandler systemLogoutSuccessHandler;
     @Resource
     private DaoUserDetailService daoUserDetailService;
     @Resource
     private DaoPasswordEncoder daoPasswordEncoder;
+    @Resource
+    private JwtAuthenticationProvider jwtAuthenticationProvider;
+    @Resource
+    private SystemAuthenticationEntryPoint systemAuthenticationEntryPoint;
 
     /**
-     * 这个方法定义哪些URL路径应该被保护，哪些不应该被保护
-     * 特别地，/和/home路径被配置为不需要任何身份验证。
-     * 所有其他路径都必须经过身份验证。
      *
      * @param http
      * @throws Exception
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        //放行认证接口配置
         http
-                .authenticationProvider(daoAuthenticationProvider())
-                //未登录时访问资源
-                .exceptionHandling()
-                .authenticationEntryPoint(systemAuthenticationEntryPoint)
-                .accessDeniedHandler(systemAccessDeniedHandler)
-                .and()
-                //放行/认证资源
                 .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                //登录
-                .formLogin()
-                .failureHandler(systemAuthenticationFailureHandler)
-                .successHandler(systemAuthenticationSuccessHandler)
-                .and()
-                //登出
-                .logout()
-                .logoutSuccessHandler(systemLogoutSuccessHandler)
-                .permitAll()
-                .and()
+                .antMatchers("/swagger-resources/**", "/v3/api-docs", "/swagger-ui/**").permitAll()
+                .anyRequest().authenticated().and()
                 .sessionManagement()
-                .and()
-                .cors().disable()
-                .csrf().disable();
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .cors().and().csrf().disable()
+                .formLogin()
+                .successHandler(formAuthenticationSuccessHandler)
+                .failureHandler(formAuthenticationFailureHandler).and()
+                .logout()
+                .logoutSuccessHandler(systemLogoutSuccessHandler).and()
+                .apply(new JwtAuthenticationConfigurer<>())
+                .failureHandler(jwtAuthenticationFailureHandler)
+                .successHandler(jwtAuthenticationSuccessHandler).and()
+                .exceptionHandling()
+                .authenticationEntryPoint(systemAuthenticationEntryPoint);
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .authenticationProvider(daoAuthenticationProvider())
+                .authenticationProvider(jwtAuthenticationProvider);
     }
 
     @Bean
-    public AuthenticationProvider daoAuthenticationProvider(){
+    public AuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(daoUserDetailService);
         provider.setPasswordEncoder(daoPasswordEncoder);

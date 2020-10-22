@@ -1,4 +1,4 @@
-package org.zipper.flowable.app.security.password;
+package org.zipper.flowable.app.security;
 
 
 import org.springframework.security.crypto.password.PasswordEncoder;

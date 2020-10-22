@@ -1,4 +1,4 @@
-package org.zipper.flowable.app.security.authentication.logout;
+package org.zipper.flowable.app.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -16,10 +16,15 @@ import java.io.IOException;
  */
 @Component
 public class SystemLogoutSuccessHandler implements LogoutSuccessHandler {
+    @Resource
+    private DaoUserDetailService daoUserDetailService;
+
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write(ResponseEntity.success(authentication).toString());
+
+        daoUserDetailService.removeToken(authentication.getName());
+        response.getWriter().write(ResponseEntity.success("登出成功").toString());
         response.getWriter().flush();
         response.getWriter().close();
     }

@@ -3,6 +3,7 @@ package org.zipper.flowable.app.controller;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.dto.ProcessInitiateParameter;
 import org.zipper.flowable.app.dto.TaskFinishParameter;
+import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
@@ -33,7 +34,7 @@ public class MyProcessController {
     @PostMapping(value = "initiate")
     public ResponseEntity<Boolean> initiate(@RequestBody ProcessInitiateParameter parameter) {
 
-        String initiator = "zhuxj";
+        String initiator = AuthenticationUtil.getAuthentication().getName();
         boolean result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
         return ResponseEntity.success(result);
     }

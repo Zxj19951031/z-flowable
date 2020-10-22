@@ -63,8 +63,8 @@ public class ProcessController {
     @GetMapping(value = "page")
     public ResponseEntity<PageInfo<Process>> page(@RequestParam Integer pageSize,
                                                   @RequestParam Integer pageNum,
-                                                  @RequestParam String name,
-                                                  @RequestParam Integer processStatus) {
+                                                  @RequestParam(required = false) String name,
+                                                  @RequestParam(required = false) Integer processStatus) {
         PageHelper.startPage(pageNum, pageSize);
         List<Process> processes = this.processService.page(name, ProcessStatus.get(processStatus));
         return ResponseEntity.success(new PageInfo<>(processes));

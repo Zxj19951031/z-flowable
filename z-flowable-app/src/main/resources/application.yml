@@ -7,9 +7,6 @@ logging:
     org.zipper.flowable.app: debug
 
 spring:
-  session:
-    store-type: redis
-    timeout: 3600
   profiles:
     active: dev
   datasource:
@@ -43,4 +40,5 @@ spring:
 
 flowable:
   database-schema-update: true
+
 
