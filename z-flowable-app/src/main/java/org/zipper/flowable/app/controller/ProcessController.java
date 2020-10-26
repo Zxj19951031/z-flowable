@@ -2,6 +2,7 @@ package org.zipper.flowable.app.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.dto.ProcessSaveParameter;
@@ -15,7 +16,6 @@ import java.util.List;
 
 /**
  * 流程定义管理
- *
  *
  * @author zhuxj
  * @since 2020/10/13
@@ -34,6 +34,7 @@ public class ProcessController {
      * @return id of the record
      */
     @PostMapping(value = "save")
+    @PreAuthorize(value = "hasAuthority('process') and hasAnyAuthority('process_new','process_edit')")
     public ResponseEntity<Long> save(@RequestBody ProcessSaveParameter parameter) {
 
         long id = processService.save(parameter.getId(), parameter.getName(), parameter.getXml());
@@ -47,6 +48,7 @@ public class ProcessController {
      * @return id of the record
      */
     @PostMapping(value = "saveAndDeploy")
+    @PreAuthorize(value = "hasAuthority('process') and hasAnyAuthority('process_new','process_edit') and hasAuthority('process_deploy')")
     public ResponseEntity<Long> saveAndDeploy(@RequestBody ProcessSaveParameter parameter) {
 
         long id = processService.saveAndDeploy(parameter.getId(), parameter.getName(), parameter.getXml());
@@ -61,6 +63,7 @@ public class ProcessController {
      * @return 分页记录
      */
     @GetMapping(value = "page")
+    @PreAuthorize(value = "hasAuthority('process') and hasAuthority('process_query')")
     public ResponseEntity<PageInfo<Process>> page(@RequestParam Integer pageSize,
                                                   @RequestParam Integer pageNum,
                                                   @RequestParam(required = false) String name,
@@ -77,6 +80,7 @@ public class ProcessController {
      * @return true or false
      */
     @DeleteMapping(value = "delete")
+    @PreAuthorize(value = "hasAuthority('process') and hasAuthority('process_del')")
     public ResponseEntity<Boolean> delete(@RequestBody ArrayList<Integer> ids) {
 
         boolean result = this.processService.delete(ids);

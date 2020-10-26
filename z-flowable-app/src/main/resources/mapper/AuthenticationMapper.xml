@@ -3,13 +3,13 @@
 <mapper namespace="org.zipper.flowable.app.mapper.AuthenticationMapper">
 
     <insert id="insert" parameterType="org.zipper.flowable.app.entity.Member" useGeneratedKeys="true" keyProperty="id">
-        insert into `z-flowable`.flow_authentication(username, password, create_time, update_time, status)
+        insert into flow_authentication(username, password, create_time, update_time, status)
         values (#{username}, #{password}, #{createTime}, #{updateTime}, #{status})
     </insert>
     <select id="selectByUsernameEqual" resultType="org.zipper.flowable.app.entity.Member"
             parameterType="java.lang.String">
         select id, username, password, create_time, update_time, status
-        from `z-flowable`.flow_authentication
+        from flow_authentication
         where status = 0
           and username = #{username}
     </select>

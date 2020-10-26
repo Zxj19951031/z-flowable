@@ -1,5 +1,6 @@
 package org.zipper.flowable.app.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.dto.ProcessInitiateParameter;
 import org.zipper.flowable.app.dto.TaskFinishParameter;
@@ -32,6 +33,7 @@ public class MyProcessController {
      * @return true or false
      */
     @PostMapping(value = "initiate")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_init')")
     public ResponseEntity<Boolean> initiate(@RequestBody ProcessInitiateParameter parameter) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();
@@ -48,6 +50,7 @@ public class MyProcessController {
      * @return list of my instance
      */
     @PostMapping(value = "mine/list")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_query')")
     public ResponseEntity minePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
@@ -65,6 +68,7 @@ public class MyProcessController {
      * @return list of todo instance
      */
     @PostMapping(value = "todo/list")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_todo_query')")
     public ResponseEntity todoPage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
         String user = "zhuxj";
@@ -82,6 +86,7 @@ public class MyProcessController {
      * @return list of done instance
      */
     @PostMapping(value = "done/list")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_done_query')")
     public ResponseEntity donePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
@@ -98,6 +103,7 @@ public class MyProcessController {
      * @see TaskFinishParameter
      */
     @PostMapping(value = "finish")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_todo_finish')")
     public ResponseEntity finish(@RequestBody TaskFinishParameter parameter) {
 
         String user = "zhuxj";

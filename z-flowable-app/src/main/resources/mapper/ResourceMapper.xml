@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.zipper.flowable.app.mapper.ResourceMapper">
+    <select id="selectByUserId" resultType="org.zipper.flowable.app.entity.Resource">
+        select id,
+               name,
+               label,
+               pid,
+               path,
+               type,
+               sort,
+               level,
+               create_time,
+               update_time,
+               status
+        from flow_resource
+        where status = 0
+          and id in (select distinct res_id
+                     from flow_rel_resource_role
+                     where role_id in (select role_id from flow_rel_role_authentication where user_id = #{userId}))
+    </select>
+</mapper>

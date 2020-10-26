@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -27,6 +28,7 @@ import javax.annotation.Resource;
  */
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Resource
@@ -45,6 +47,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationProvider jwtAuthenticationProvider;
     @Resource
     private SystemAuthenticationEntryPoint systemAuthenticationEntryPoint;
+    @Resource
+    private SystemAccessDeniedHandler systemAccessDeniedHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -82,7 +86,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(jwtAuthenticationSuccessHandler).and()
                 .exceptionHandling()
                 //全局的认证入口
-                .authenticationEntryPoint(systemAuthenticationEntryPoint);
+                .authenticationEntryPoint(systemAuthenticationEntryPoint)
+                .accessDeniedHandler(systemAccessDeniedHandler);
     }
 
     @Override

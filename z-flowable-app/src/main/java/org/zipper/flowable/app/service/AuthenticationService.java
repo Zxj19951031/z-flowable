@@ -17,8 +17,15 @@ public interface AuthenticationService {
 
     /**
      * 通过名称等值匹配获取有效用户记录
-     * @param username
+     * @param username 用户名
      * @return member
      */
     Member getByUsernameEqual(String username);
+
+    /**
+     * 校验用户名是否存在
+     * @param username 用户名
+     * @return true false
+     */
+    boolean checkUsernameExist(String username);
 }

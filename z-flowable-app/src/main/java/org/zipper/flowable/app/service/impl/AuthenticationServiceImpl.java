@@ -22,15 +22,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public int signUp(String username, String password) {
-        if(username ==null || username.equals("")){
-            throw HelperException.newException(SystemError.PARAMETER_ERROR,"用户名不可为空，请填写正确的用户名");
+        if (username == null || username.equals("")) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "用户名不可为空，请填写正确的用户名");
         }
-        if(password==null || password.equals("")){
-            throw HelperException.newException(SystemError.PARAMETER_ERROR,"密码不可为空，请填写正确的密码");
+        if (checkUsernameExist(username)) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "用户名已存在，请重新填写");
+        }
+        if (password == null || password.equals("")) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "密码不可为空，请填写正确的密码");
         }
 
+
         String encryptedPwd = new BCryptPasswordEncoder().encode(password);
-        Member member = new Member(username,encryptedPwd);
+        Member member = new Member(username, encryptedPwd);
         this.authenticationMapper.insert(member);
 
         return member.getId();
@@ -39,5 +43,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Member getByUsernameEqual(String username) {
         return this.authenticationMapper.selectByUsernameEqual(username);
+    }
+
+
+    @Override
+    public boolean checkUsernameExist(String username) {
+        return this.authenticationMapper.selectByUsernameEqual(username) != null;
     }
 }

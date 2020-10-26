@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,10 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.zipper.flowable.app.entity.Member;
 import org.zipper.flowable.app.service.AuthenticationService;
+import org.zipper.flowable.app.service.ResourceService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,6 +48,9 @@ public class DaoUserDetailService implements UserDetailsService {
     @Resource
     private AuthenticationService authenticationService;
 
+    @Resource
+    private ResourceService resourceService;
+
     /**
      * 通过用户名获取用户信息
      *
@@ -57,10 +64,15 @@ public class DaoUserDetailService implements UserDetailsService {
         if (member == null) {
             throw new UsernameNotFoundException(String.format("用户%s不存在", s));
         }
+        List<org.zipper.flowable.app.entity.Resource> resources = resourceService.getResourceByUserId(member.getId());
+        List<GrantedAuthority> authorities = new ArrayList<>(resources.size());
+        for (org.zipper.flowable.app.entity.Resource resource : resources) {
+            authorities.add(new SimpleGrantedAuthority(resource.getLabel()));
+        }
         return User.builder()
                 .username(s)
                 .password(member.getPassword())
-                .authorities(new ArrayList<>())
+                .authorities(authorities)
                 .build();
     }
 
