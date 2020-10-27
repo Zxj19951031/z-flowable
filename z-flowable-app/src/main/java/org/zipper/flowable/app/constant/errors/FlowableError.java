@@ -9,7 +9,8 @@ import org.zipper.helper.exception.IErrorCode;
  * @since 2020/10/13
  */
 public enum FlowableError implements IErrorCode {
-    PROCESS_DEFINITION_NOT_EXIST(10001, "process definition not exist"),
+    PROCESS_DEFINITION_NOT_EXIST(10001, "流程定义不存在"),
+    XML_FORMAT_ERROR(10002,"流程配置格式有误")
     ;
 
     private final int code;

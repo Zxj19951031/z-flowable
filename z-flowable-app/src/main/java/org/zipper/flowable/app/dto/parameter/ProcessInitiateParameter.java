@@ -1,4 +1,4 @@
-package org.zipper.flowable.app.dto;
+package org.zipper.flowable.app.dto.parameter;
 
 import java.util.Map;
 

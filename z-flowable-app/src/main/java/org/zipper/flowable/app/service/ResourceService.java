@@ -1,6 +1,6 @@
 package org.zipper.flowable.app.service;
 
-import org.zipper.flowable.app.dto.ResourceNode;
+import org.zipper.flowable.app.vo.ResourceNode;
 import org.zipper.flowable.app.entity.Resource;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.zipper.flowable.app.dto;
+package org.zipper.flowable.app.vo;
 
 import org.springframework.beans.BeanUtils;
 import org.zipper.flowable.app.entity.Resource;

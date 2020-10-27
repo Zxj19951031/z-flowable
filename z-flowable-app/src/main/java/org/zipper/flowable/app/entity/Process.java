@@ -1,5 +1,8 @@
 package org.zipper.flowable.app.entity;
 
+import org.zipper.flowable.app.constant.enums.ProcessStatus;
+import org.zipper.flowable.app.constant.enums.Status;
+
 import java.time.LocalDateTime;
 
 /**
@@ -7,26 +10,44 @@ import java.time.LocalDateTime;
  * @since 2020/10/12
  */
 public class Process {
-    private Long id;
+    private Integer id;
+    private String processKey;
     private String name;
+    private Integer formId;
     private String xml;
+    private ProcessStatus deployStatus;
+    private LocalDateTime deployTime;
     private LocalDateTime createTime;
-    private LocalDateTime modifyTime;
-    private Integer status;
+    private LocalDateTime updateTime;
+    private Status status;
 
-    public String getXml() {
-        return xml;
+    public Process() {
     }
 
-    public void setXml(String xml) {
+    public Process(String name, String key, String xml, Integer formId) {
+        this.processKey = key;
+        this.name = name;
+        this.formId = formId;
         this.xml = xml;
+        this.deployStatus = ProcessStatus.UNPUBLISHED;
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+        this.status = Status.VALID;
     }
 
-    public Long getId() {
+    public Integer getFormId() {
+        return formId;
+    }
+
+    public void setFormId(Integer formId) {
+        this.formId = formId;
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -38,6 +59,30 @@ public class Process {
         this.name = name;
     }
 
+    public String getProcessKey() {
+        return processKey;
+    }
+
+    public void setProcessKey(String processKey) {
+        this.processKey = processKey;
+    }
+
+    public String getXml() {
+        return xml;
+    }
+
+    public void setXml(String xml) {
+        this.xml = xml;
+    }
+
+    public LocalDateTime getDeployTime() {
+        return deployTime;
+    }
+
+    public void setDeployTime(LocalDateTime deployTime) {
+        this.deployTime = deployTime;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -46,19 +91,27 @@ public class Process {
         this.createTime = createTime;
     }
 
-    public LocalDateTime getModifyTime() {
-        return modifyTime;
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
     }
 
-    public void setModifyTime(LocalDateTime modifyTime) {
-        this.modifyTime = modifyTime;
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 
-    public Integer getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public ProcessStatus getDeployStatus() {
+        return deployStatus;
+    }
+
+    public void setDeployStatus(ProcessStatus deployStatus) {
+        this.deployStatus = deployStatus;
     }
 }

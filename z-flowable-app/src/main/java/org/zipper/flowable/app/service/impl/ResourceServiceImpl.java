@@ -2,7 +2,7 @@ package org.zipper.flowable.app.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.zipper.flowable.app.constant.enums.ResourceType;
-import org.zipper.flowable.app.dto.ResourceNode;
+import org.zipper.flowable.app.vo.ResourceNode;
 import org.zipper.flowable.app.entity.Resource;
 import org.zipper.flowable.app.mapper.ResourceMapper;
 import org.zipper.flowable.app.service.ResourceService;

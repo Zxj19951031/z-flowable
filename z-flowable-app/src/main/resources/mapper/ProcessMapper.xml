@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.zipper.flowable.app.mapper.ProcessMapper">
+    <insert id="insert" parameterType="org.zipper.flowable.app.entity.Process" useGeneratedKeys="true" keyProperty="id">
+        insert into flow_process(process_key, name, xml, deploy_status, status)
+        values (#{processKey}, #{name}, #{xml}, #{deployStatus}, #{status})
+    </insert>
+    <update id="updateById" parameterType="org.zipper.flowable.app.entity.Process">
+        update flow_process
+        set update_time = now()
+        <if test="name !=null and name !=''">
+            , name = #{name}
+        </if>
+        <if test="processKey !=null and processKey!=''">
+            , process_key = #{processKey}
+        </if>
+        where id = #{id}
+    </update>
+    <update id="delete">
+        update flow_process
+        set update_time = now(),
+        status = 1
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+    <update id="updateDeployStatus">
+        update flow_process
+        set update_time   = now(),
+            deploy_status = #{processStatus},
+            deploy_time   = now()
+        where id = #{id}
+    </update>
+    <select id="selectById" resultType="org.zipper.flowable.app.entity.Process">
+        select id,
+               process_key,
+               name,
+               xml,
+               deploy_status,
+               deploy_time,
+               create_time,
+               update_time,
+               status
+        from flow_process
+        where id = #{id}
+    </select>
+    <select id="selectByParameter" parameterType="org.zipper.flowable.app.dto.parameter.ProcessQueryParameter"
+            resultType="org.zipper.flowable.app.entity.Process">
+        select id,process_key,name,xml,deploy_status,deploy_time,create_time,update_time,status
+        from flow_process
+        where status = 0
+        <if test="name!=null and name !=''">
+            and name like CONCAT('%',#{name},'%')
+        </if>
+        <if test="deployStatus!=null">
+            and deploy_status = #{deployStatus}
+        </if>
+        order by create_time desc
+    </select>
+    <select id="selectCntByKey" resultType="java.lang.Integer">
+        select count(*)
+        from flow_process
+        where process_key = #{key}
+    </select>
+</mapper>

@@ -2,8 +2,8 @@ package org.zipper.flowable.app.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.zipper.flowable.app.dto.ProcessInitiateParameter;
-import org.zipper.flowable.app.dto.TaskFinishParameter;
+import org.zipper.flowable.app.dto.parameter.ProcessInitiateParameter;
+import org.zipper.flowable.app.dto.parameter.TaskFinishParameter;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;

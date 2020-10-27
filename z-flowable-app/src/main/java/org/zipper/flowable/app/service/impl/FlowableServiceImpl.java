@@ -1,5 +1,8 @@
 package org.zipper.flowable.app.service.impl;
 
+import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.common.engine.impl.util.io.StringStreamSource;
 import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -15,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.zipper.flowable.app.constant.FlowableVariableKey;
 import org.zipper.flowable.app.constant.errors.FlowableError;
+import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.helper.exception.HelperException;
 
@@ -39,11 +43,6 @@ public class FlowableServiceImpl implements FlowableService {
     @Resource
     TaskService taskService;
 
-    /**
-     * @param name 流程名称
-     * @param xml  流程Bpmn2.0定义字符串
-     * @return Deployment
-     */
     @Override
     public Deployment deploy(String name, String xml) {
         //资源名称以bpmn20.xml结尾Flowable才会校验xml内容否则部署失败
@@ -55,12 +54,6 @@ public class FlowableServiceImpl implements FlowableService {
     }
 
 
-    /**
-     * @param initiator  流程发起方
-     * @param processKey 流程关键字，即*.bpmn20.xml中process标签的id字段
-     * @param variables  流程变量
-     * @return ProcessInstance
-     */
     @Override
     public ProcessInstance startProcess(String initiator, String processKey, Map<String, Object> variables) {
 
@@ -81,12 +74,6 @@ public class FlowableServiceImpl implements FlowableService {
         return instance;
     }
 
-    /**
-     * @param pageNum   页码
-     * @param pageSize  单页大小
-     * @param initiator 发起人
-     * @return list of {@link HistoricProcessInstance}
-     */
     @Override
     public List<HistoricProcessInstance> queryMine(int pageNum, int pageSize, String initiator) {
 
@@ -98,13 +85,6 @@ public class FlowableServiceImpl implements FlowableService {
                 .listPage(pageSize * pageNum, pageSize);
     }
 
-
-    /**
-     * @param pageNum  页码
-     * @param pageSize 单页大小
-     * @param user     任务受理人或候选人
-     * @return list of task
-     */
     @Override
     public List<Task> queryTodo(int pageNum, int pageSize, String user) {
         TaskQuery query = this.taskService.createTaskQuery();
@@ -115,12 +95,6 @@ public class FlowableServiceImpl implements FlowableService {
                 .listPage(pageSize * pageNum, pageSize);
     }
 
-    /**
-     * @param pageNum  页码
-     * @param pageSize 单页
-     * @param user     任务受理人
-     * @return ids of process instance
-     */
     @Override
     public List<String> queryDone(int pageNum, int pageSize, String user) {
 
@@ -136,18 +110,26 @@ public class FlowableServiceImpl implements FlowableService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * @param user      任务受理人
-     * @param taskId    任务编号
-     * @param variables 任务变量
-     * @return true or false
-     */
+
     @Override
     public boolean finishTask(String user, String taskId, Map<String, Object> variables) {
 
         this.taskService.setAssignee(taskId, user);
         this.taskService.complete(taskId, variables, true);
         return true;
+    }
+
+    @Override
+    public String getMainProcessKey(String xml) {
+        try {
+            StringStreamSource streamSource = new StringStreamSource(xml);
+            BpmnXMLConverter converter = new BpmnXMLConverter();
+            BpmnModel model = converter.convertToBpmnModel(streamSource, true, true);
+            return model.getMainProcess().getId();
+        }catch (Throwable throwable){
+            LOGGER.error("解析xml至BpmnModel异常",throwable);
+            throw HelperException.newException(FlowableError.XML_FORMAT_ERROR,"流程配置有误，请检查");
+        }
     }
 
 }

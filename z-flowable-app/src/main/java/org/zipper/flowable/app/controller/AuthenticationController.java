@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zipper.flowable.app.dto.ResourceNode;
-import org.zipper.flowable.app.dto.SignUpParameter;
+import org.zipper.flowable.app.vo.ResourceNode;
+import org.zipper.flowable.app.dto.parameter.SignUpParameter;
 import org.zipper.flowable.app.entity.Member;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.AuthenticationService;
@@ -47,7 +47,7 @@ public class AuthenticationController {
     /**
      * 获取用户资源权限
      *
-     * @return
+     * @return 带有按钮内容的菜单树
      */
     @PostMapping(value = "/resource/get")
     @PreAuthorize(value = "isAuthenticated()")

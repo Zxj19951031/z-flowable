@@ -79,4 +79,13 @@ public interface FlowableService {
      */
     public boolean finishTask(String user, String taskId, Map<String, Object> variables);
 
+
+    /**
+     * 通过xml获取其主流程key
+     *
+     * @param xml 流程配置
+     * @return process id
+     */
+    public String getMainProcessKey(String xml);
+
 }

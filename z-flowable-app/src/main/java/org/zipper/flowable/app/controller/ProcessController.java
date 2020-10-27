@@ -5,7 +5,8 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
-import org.zipper.flowable.app.dto.ProcessSaveParameter;
+import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
+import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
 import org.zipper.flowable.app.entity.Process;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
@@ -35,9 +36,9 @@ public class ProcessController {
      */
     @PostMapping(value = "save")
     @PreAuthorize(value = "hasAuthority('process') and hasAnyAuthority('process_new','process_edit')")
-    public ResponseEntity<Long> save(@RequestBody ProcessSaveParameter parameter) {
+    public ResponseEntity<Integer> save(@RequestBody ProcessSaveParameter parameter) {
 
-        long id = processService.save(parameter.getId(), parameter.getName(), parameter.getXml());
+        int id = processService.save(parameter);
 
         return ResponseEntity.success(id);
     }
@@ -49,9 +50,9 @@ public class ProcessController {
      */
     @PostMapping(value = "saveAndDeploy")
     @PreAuthorize(value = "hasAuthority('process') and hasAnyAuthority('process_new','process_edit') and hasAuthority('process_deploy')")
-    public ResponseEntity<Long> saveAndDeploy(@RequestBody ProcessSaveParameter parameter) {
+    public ResponseEntity<Integer> saveAndDeploy(@RequestBody ProcessSaveParameter parameter) {
 
-        long id = processService.saveAndDeploy(parameter.getId(), parameter.getName(), parameter.getXml());
+        int id = processService.saveAndDeploy(parameter);
 
         return ResponseEntity.success(id);
     }
@@ -67,9 +68,10 @@ public class ProcessController {
     public ResponseEntity<PageInfo<Process>> page(@RequestParam Integer pageSize,
                                                   @RequestParam Integer pageNum,
                                                   @RequestParam(required = false) String name,
-                                                  @RequestParam(required = false) Integer processStatus) {
+                                                  @RequestParam(required = false) ProcessStatus deployStatus) {
         PageHelper.startPage(pageNum, pageSize);
-        List<Process> processes = this.processService.page(name, ProcessStatus.get(processStatus));
+        ProcessQueryParameter parameter = new ProcessQueryParameter(name, deployStatus);
+        List<Process> processes = this.processService.list(parameter);
         return ResponseEntity.success(new PageInfo<>(processes));
     }
 
@@ -79,11 +81,25 @@ public class ProcessController {
      * @param ids 编号列表
      * @return true or false
      */
-    @DeleteMapping(value = "delete")
+    @PostMapping(value = "del")
     @PreAuthorize(value = "hasAuthority('process') and hasAuthority('process_del')")
-    public ResponseEntity<Boolean> delete(@RequestBody ArrayList<Integer> ids) {
+    public ResponseEntity<Integer> delete(@RequestBody ArrayList<Integer> ids) {
 
-        boolean result = this.processService.delete(ids);
+        int result = this.processService.delete(ids);
+
         return ResponseEntity.success(result);
+    }
+
+
+    /**
+     * 发布流程
+     *
+     * @param id 流程编号
+     * @return true or false
+     */
+    @PostMapping(value = "deploy")
+    @PreAuthorize(value = "hasAuthority('process') and hasAuthority('process_deploy')")
+    public ResponseEntity<Boolean> deploy(@RequestParam Integer id) {
+        return ResponseEntity.success(processService.deploy(id));
     }
 }

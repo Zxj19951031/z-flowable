@@ -1,4 +1,4 @@
-package org.zipper.flowable.app.dto;
+package org.zipper.flowable.app.dto.parameter;
 
 /**
  * 注册参数
