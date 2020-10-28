@@ -8,11 +8,11 @@ package org.zipper.flowable.app.constant.enums;
  */
 public enum ProcessStatus {
     /**
-     * 未发布
+     * 未发布-0
      */
     UNPUBLISHED,
     /**
-     * 已发布
+     * 已发布-1
      */
     PUBLISHED;
 

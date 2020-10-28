@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.zipper.flowable.app.mapper.ProcessMapper">
-    <insert id="insert" parameterType="org.zipper.flowable.app.entity.Process" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="org.zipper.flowable.app.entity.MyProcess" useGeneratedKeys="true" keyProperty="id">
         insert into flow_process(process_key, name, form_id, xml, deploy_status, allow_initiator, status)
         values (#{processKey}, #{name}, #{formId}, #{xml}, #{deployStatus}, #{allowInitiator}, #{status})
     </insert>
-    <update id="updateById" parameterType="org.zipper.flowable.app.entity.Process">
+    <update id="updateById" parameterType="org.zipper.flowable.app.entity.MyProcess">
         update flow_process
         set update_time = now()
         <if test="name !=null and name !=''">
@@ -32,13 +32,13 @@
             deploy_time   = now()
         where id = #{id}
     </update>
-    <select id="selectById" resultType="org.zipper.flowable.app.entity.Process">
+    <select id="selectById" resultType="org.zipper.flowable.app.entity.MyProcess">
         select *
         from flow_process
         where id = #{id}
     </select>
     <select id="selectByParameter" parameterType="org.zipper.flowable.app.dto.parameter.ProcessQueryParameter"
-            resultType="org.zipper.flowable.app.entity.Process">
+            resultType="org.zipper.flowable.app.entity.MyProcess">
         select *
         from flow_process
         where status = 0
@@ -55,7 +55,7 @@
         from flow_process
         where process_key = #{key}
     </select>
-    <select id="selectByAllowInitiator" resultType="org.zipper.flowable.app.entity.Process">
+    <select id="selectByAllowInitiator" resultType="org.zipper.flowable.app.entity.MyProcess">
         select *
         from flow_process
         where status = 0

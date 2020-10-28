@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * @author zhuxj
  * @since 2020/10/12
  */
-public class Process {
+public class MyProcess {
     private Integer id;
     private String processKey;
     private String name;
@@ -22,10 +22,10 @@ public class Process {
     private LocalDateTime updateTime;
     private Status status;
 
-    public Process() {
+    public MyProcess() {
     }
 
-    public Process(String name, String key, String xml, Integer formId) {
+    public MyProcess(String name, String key, String xml, Integer formId) {
         this.processKey = key;
         this.name = name;
         this.formId = formId;

@@ -3,7 +3,7 @@
         xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
         xmlns:flowable="http://flowable.org/bpmn"
         targetNamespace="Examples">
-    <process id="oneTaskProcess" name="The One Task Process">
+    <myProcess id="oneTaskProcess" name="The One Task Process">
         <extensionElements>
             <flowable:executionListener event="start"
                                         delegateExpression="${processStartExecutionListener}"/>
@@ -34,5 +34,5 @@
         <!--        <serviceTask id="serviceTask" flowable:delegateExpression="${messageDelegate}"/>-->
         <!--        <sequenceFlow sourceRef="serviceTask" targetRef="theEnd"/>-->
         <endEvent id="theEnd"/>
-    </process>
+    </myProcess>
 </definitions>

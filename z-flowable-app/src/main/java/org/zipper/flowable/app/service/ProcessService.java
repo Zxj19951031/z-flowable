@@ -3,7 +3,7 @@ package org.zipper.flowable.app.service;
 
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
-import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.MyProcess;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,7 @@ public interface ProcessService {
      * @return 流程列表
      * @see ProcessQueryParameter
      */
-    List<Process> list(ProcessQueryParameter parameter);
+    List<MyProcess> list(ProcessQueryParameter parameter);
 
     /**
      * 批量删除
@@ -55,12 +55,12 @@ public interface ProcessService {
 
     /**
      * 发起流程
-     *
-     * @param initiator  发起人
+     *  @param initiator  发起人
      * @param processKey 流程定义key即xml中process标签的id属性
      * @param variables  流程变量
+     * @return
      */
-    void initiate(String initiator, String processKey, Map<String, Object> variables);
+    int initiate(String initiator, String processKey, Map<String, Object> variables);
 
 
     /**
@@ -89,5 +89,14 @@ public interface ProcessService {
      * @param userId 用户编号
      * @return 流程列表
      */
-    List<Process> queryMyAllowInitProcess(String userId);
+    List<MyProcess> queryMyAllowInitProcess(String userId);
+
+    /**
+     * 查询我发起的
+     * @param pageNum 分页参数，页码
+     * @param pageSize 分页参数，单页大小
+     * @param initiator 发起人
+     * @return list of process instance
+     */
+    List queryMine(Integer pageNum, Integer pageSize, String initiator);
 }

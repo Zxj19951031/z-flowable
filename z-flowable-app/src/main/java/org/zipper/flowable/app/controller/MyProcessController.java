@@ -4,7 +4,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.dto.parameter.ProcessInitiateParameter;
 import org.zipper.flowable.app.dto.parameter.TaskFinishParameter;
-import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.MyProcess;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
@@ -37,7 +37,7 @@ public class MyProcessController {
      */
     @GetMapping(value = "/allow/init/list")
     @PreAuthorize(value = "hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<List<Process>> defineList() {
+    public ResponseEntity<List<MyProcess>> defineList() {
         String initiator = AuthenticationUtil.getAuthentication().getName();
         return ResponseEntity.success(processService.queryMyAllowInitProcess(initiator));
     }
@@ -46,15 +46,14 @@ public class MyProcessController {
      * 发起流程
      *
      * @param parameter 流程变量
-     * @return true or false
+     * @return id of instance
      */
     @PostMapping(value = "initiate")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
-
+    public ResponseEntity<Integer> initiate(@RequestBody ProcessInitiateParameter parameter) {
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
-        return ResponseEntity.success("success");
+        int result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
+        return ResponseEntity.success(result);
     }
 
     /**
@@ -71,7 +70,7 @@ public class MyProcessController {
                                    @RequestParam Integer pageNum) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        this.flowableService.queryMine(pageNum, pageSize, initiator);
+        this.processService.queryMine(pageNum, pageSize, initiator);
         return ResponseEntity.success(null);
     }
 

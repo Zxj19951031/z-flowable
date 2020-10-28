@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.zipper.flowable.app.mapper.ProcessInstanceMapper">
+    <insert id="insert" parameterType="org.zipper.flowable.app.entity.MyProcessInstance" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into flow_process_instance(instance_id, stage, status)
+        values (#{instanceId}, #{stage}, #{status})
+    </insert>
+</mapper>

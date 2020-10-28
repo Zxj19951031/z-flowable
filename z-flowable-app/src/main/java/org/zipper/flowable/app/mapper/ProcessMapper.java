@@ -3,7 +3,7 @@ package org.zipper.flowable.app.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
-import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.MyProcess;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,10 @@ public interface ProcessMapper {
     /**
      * 新增一条流程定义记录
      *
-     * @param process 流程定义{@link Process}
+     * @param myProcess 流程定义{@link MyProcess}
      * @return 受影响行数
      */
-    int insert(Process process);
+    int insert(MyProcess myProcess);
 
     /**
      * 查询一个流程定义记录
@@ -27,15 +27,15 @@ public interface ProcessMapper {
      * @param id 流程定义编号
      * @return 流程定义
      */
-    Process selectById(Integer id);
+    MyProcess selectById(Integer id);
 
     /**
      * 更新一条流程定义记录的name和xml字段
      *
-     * @param process 流程定义{@link Process}
+     * @param myProcess 流程定义{@link MyProcess}
      * @return 受影响行数
      */
-    int updateById(Process process);
+    int updateById(MyProcess myProcess);
 
     /**
      * 根据参数查询流程定义列表
@@ -43,7 +43,7 @@ public interface ProcessMapper {
      * @param parameter 查询参数{@link ProcessQueryParameter}
      * @return list of process
      */
-    List<Process> selectByParameter(ProcessQueryParameter parameter);
+    List<MyProcess> selectByParameter(ProcessQueryParameter parameter);
 
     /**
      * 逻辑删除流程
@@ -76,5 +76,5 @@ public interface ProcessMapper {
      * @param identities 身份特征
      * @return 流程列表
      */
-    List<Process> selectByAllowInitiator(@Param("identities") List<String> identities);
+    List<MyProcess> selectByAllowInitiator(@Param("identities") List<String> identities);
 }

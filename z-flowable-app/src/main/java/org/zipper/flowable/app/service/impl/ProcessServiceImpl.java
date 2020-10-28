@@ -1,8 +1,8 @@
 package org.zipper.flowable.app.service.impl;
 
-import liquibase.pro.packaged.A;
-import org.apache.commons.lang3.ArrayUtils;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.slf4j.Logger;
@@ -15,9 +15,11 @@ import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
 import org.zipper.flowable.app.entity.Member;
-import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.MyProcess;
+import org.zipper.flowable.app.entity.MyProcessInstance;
 import org.zipper.flowable.app.entity.Role;
 import org.zipper.flowable.app.mapper.AuthenticationMapper;
+import org.zipper.flowable.app.mapper.ProcessInstanceMapper;
 import org.zipper.flowable.app.mapper.ProcessMapper;
 import org.zipper.flowable.app.mapper.RoleMapper;
 import org.zipper.flowable.app.service.FlowableService;
@@ -29,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +53,9 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Resource
     private AuthenticationMapper authenticationMapper;
+
+    @Resource
+    private ProcessInstanceMapper processInstanceMapper;
 
 
     /**
@@ -97,7 +101,7 @@ public class ProcessServiceImpl implements ProcessService {
         }
 
 
-        Process process = null;
+        MyProcess myProcess = null;
         String key = flowableService.getMainProcessKey(parameter.getXml());
         if (parameter.getId() == null) {
             if (processMapper.selectCntByKey(key) > 0) {
@@ -107,28 +111,28 @@ public class ProcessServiceImpl implements ProcessService {
             LOGGER.info("新增流程{}", parameter.getName());
             LOGGER.debug(parameter.getXml());
 
-            process = new Process(parameter.getName(), key, parameter.getXml(), parameter.getFormId());
-            process.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
-            processMapper.insert(process);
+            myProcess = new MyProcess(parameter.getName(), key, parameter.getXml(), parameter.getFormId());
+            myProcess.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
+            processMapper.insert(myProcess);
         } else {
             LOGGER.info("更新流程{}", parameter.getName());
             LOGGER.debug(parameter.getXml());
 
-            process = processMapper.selectById(parameter.getId());
-            if (process == null) {
+            myProcess = processMapper.selectById(parameter.getId());
+            if (myProcess == null) {
                 throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
             }
-            if (!process.getProcessKey().equals(key)) {
+            if (!myProcess.getProcessKey().equals(key)) {
                 throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程关键字不可修改");
             }
 
-            process.setName(parameter.getName());
-            process.setXml(parameter.getXml());
-            process.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
-            processMapper.updateById(process);
+            myProcess.setName(parameter.getName());
+            myProcess.setXml(parameter.getXml());
+            myProcess.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
+            processMapper.updateById(myProcess);
         }
 
-        return process.getId();
+        return myProcess.getId();
 
     }
 
@@ -139,7 +143,19 @@ public class ProcessServiceImpl implements ProcessService {
         return id;
     }
 
-    public List<Process> list(ProcessQueryParameter parameter) {
+    @Transactional
+    public boolean deploy(int id) {
+        LOGGER.info("发布流程{}", id);
+        MyProcess myProcess = processMapper.selectById(id);
+        if (myProcess == null) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
+        }
+        Deployment deployment = this.flowableService.deploy(myProcess.getName(), myProcess.getXml());
+        processMapper.updateDeployStatus(ProcessStatus.PUBLISHED, id);
+        return deployment != null;
+    }
+
+    public List<MyProcess> list(ProcessQueryParameter parameter) {
 
         LOGGER.debug("查询流程列表");
 
@@ -162,24 +178,16 @@ public class ProcessServiceImpl implements ProcessService {
         return cnt;
     }
 
-    public void initiate(String initiator, String processKey, Map<String, Object> variables) {
-
-        ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
-        LOGGER.debug("用户[{}]发起流程 [{}] 成功", initiator, instance.getName());
-    }
-
     @Transactional
-    public boolean deploy(int id) {
-        LOGGER.info("发布流程{}", id);
-        Process process = processMapper.selectById(id);
-        if (process == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
-        }
-        Deployment deployment = this.flowableService.deploy(process.getName(), process.getXml());
-        processMapper.updateDeployStatus(ProcessStatus.PUBLISHED, id);
-        return deployment != null;
+    public int initiate(String initiator, String processKey, Map<String, Object> variables) {
+        LOGGER.debug("用户 [{}] 发起流程 [{}] 参数 [{}]", initiator, processKey,
+                JSONObject.toJSONString(variables, true));
+        ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
+        MyProcessInstance myInstance = new MyProcessInstance(instance.getProcessInstanceId());
+        this.processInstanceMapper.insert(myInstance);
+        LOGGER.info("用户 [{}] 发起流程 [{}] 成功", initiator, instance.getName());
+        return myInstance.getId();
     }
-
 
     public String buildAllowInitiator(boolean anybody, List<String> roles, List<String> members, List<String> departments) {
         if (anybody) {
@@ -206,10 +214,10 @@ public class ProcessServiceImpl implements ProcessService {
         }
 
         return StringUtils.join(Arrays.stream(allowInitiator)
-                .filter(l-> l!=null && !l.equals("")).collect(Collectors.toList()), ",");
+                .filter(l -> l != null && !l.equals("")).collect(Collectors.toList()), ",");
     }
 
-    public List<Process> queryMyAllowInitProcess(String username) {
+    public List<MyProcess> queryMyAllowInitProcess(String username) {
         Member member = authenticationMapper.selectByUsernameEqual(username);
         if (member == null) {
             throw HelperException.newException(SystemError.PARAMETER_ERROR, "当前用户不存在，请确认登录状态");
@@ -227,5 +235,14 @@ public class ProcessServiceImpl implements ProcessService {
 
         return processMapper.selectByAllowInitiator(identities);
 
+    }
+
+    public List queryMine(Integer pageNum, Integer pageSize, String initiator) {
+
+        List<HistoricProcessInstance> historicProcessInstances =
+                this.flowableService.queryMine(pageNum, pageSize, initiator);
+
+
+        return null;
     }
 }

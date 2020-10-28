@@ -12,15 +12,15 @@ public enum AllowInitiatorType {
      */
     ANYBODY,
     /**
-     * 按角色
+     * 按角色 ROLE_
      */
     ROLE,
     /**
-     * 按部门
+     * 按部门 DEPT_
      */
     DEPT,
     /**
-     * 指定人员
+     * 指定人员 MEMBER_
      */
     MEMBER;
 }

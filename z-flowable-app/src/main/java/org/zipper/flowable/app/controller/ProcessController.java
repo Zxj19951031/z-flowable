@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
-import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.MyProcess;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
 
@@ -65,14 +65,14 @@ public class ProcessController {
      */
     @GetMapping(value = "page")
     @PreAuthorize(value = "hasAuthority('process') and hasAuthority('process_query')")
-    public ResponseEntity<PageInfo<Process>> page(@RequestParam Integer pageSize,
-                                                  @RequestParam Integer pageNum,
-                                                  @RequestParam(required = false) String name,
-                                                  @RequestParam(required = false) ProcessStatus deployStatus) {
+    public ResponseEntity<PageInfo<MyProcess>> page(@RequestParam Integer pageSize,
+                                                    @RequestParam Integer pageNum,
+                                                    @RequestParam(required = false) String name,
+                                                    @RequestParam(required = false) ProcessStatus deployStatus) {
         PageHelper.startPage(pageNum, pageSize);
         ProcessQueryParameter parameter = new ProcessQueryParameter(name, deployStatus);
-        List<Process> processes = this.processService.list(parameter);
-        return ResponseEntity.success(new PageInfo<>(processes));
+        List<MyProcess> myProcesses = this.processService.list(parameter);
+        return ResponseEntity.success(new PageInfo<>(myProcesses));
     }
 
     /**
