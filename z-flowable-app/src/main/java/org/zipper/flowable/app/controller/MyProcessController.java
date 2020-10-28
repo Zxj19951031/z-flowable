@@ -4,12 +4,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zipper.flowable.app.dto.parameter.ProcessInitiateParameter;
 import org.zipper.flowable.app.dto.parameter.TaskFinishParameter;
+import org.zipper.flowable.app.entity.Process;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 我的流程实例
@@ -26,6 +28,20 @@ public class MyProcessController {
     @Resource
     private FlowableService flowableService;
 
+
+    /**
+     * 查询我可以发起的流程列表
+     * 权限上只要能发起流程那么就可以访问该接口数据
+     *
+     * @return list of process
+     */
+    @GetMapping(value = "/allow/init/list")
+    @PreAuthorize(value = "hasAuthority('myProcess_mine_init')")
+    public ResponseEntity<List<Process>> defineList() {
+        String initiator = AuthenticationUtil.getAuthentication().getName();
+        return ResponseEntity.success(processService.queryMyAllowInitProcess(initiator));
+    }
+
     /**
      * 发起流程
      *
@@ -33,7 +49,7 @@ public class MyProcessController {
      * @return true or false
      */
     @PostMapping(value = "initiate")
-    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_init')")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
     public ResponseEntity<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();

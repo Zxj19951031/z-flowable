@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.zipper.flowable.app.mapper.ProcessMapper">
     <insert id="insert" parameterType="org.zipper.flowable.app.entity.Process" useGeneratedKeys="true" keyProperty="id">
-        insert into flow_process(process_key, name, xml, deploy_status, status)
-        values (#{processKey}, #{name}, #{xml}, #{deployStatus}, #{status})
+        insert into flow_process(process_key, name, form_id, xml, deploy_status, allow_initiator, status)
+        values (#{processKey}, #{name}, #{formId}, #{xml}, #{deployStatus}, #{allowInitiator}, #{status})
     </insert>
     <update id="updateById" parameterType="org.zipper.flowable.app.entity.Process">
         update flow_process
@@ -33,21 +33,13 @@
         where id = #{id}
     </update>
     <select id="selectById" resultType="org.zipper.flowable.app.entity.Process">
-        select id,
-               process_key,
-               name,
-               xml,
-               deploy_status,
-               deploy_time,
-               create_time,
-               update_time,
-               status
+        select *
         from flow_process
         where id = #{id}
     </select>
     <select id="selectByParameter" parameterType="org.zipper.flowable.app.dto.parameter.ProcessQueryParameter"
             resultType="org.zipper.flowable.app.entity.Process">
-        select id,process_key,name,xml,deploy_status,deploy_time,create_time,update_time,status
+        select *
         from flow_process
         where status = 0
         <if test="name!=null and name !=''">
@@ -62,5 +54,15 @@
         select count(*)
         from flow_process
         where process_key = #{key}
+    </select>
+    <select id="selectByAllowInitiator" resultType="org.zipper.flowable.app.entity.Process">
+        select *
+        from flow_process
+        where status = 0
+        and deploy_status = 1
+        and (allow_initiator = 'ANYBODY' or
+        <foreach collection="identities" item="item" open="(" close=")" separator="or">
+            find_in_set(#{item},allow_initiator)
+        </foreach>)
     </select>
 </mapper>

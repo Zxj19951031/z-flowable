@@ -1,5 +1,7 @@
 package org.zipper.flowable.app.service.impl;
 
+import liquibase.pro.packaged.A;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -12,16 +14,22 @@ import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
+import org.zipper.flowable.app.entity.Member;
 import org.zipper.flowable.app.entity.Process;
+import org.zipper.flowable.app.entity.Role;
+import org.zipper.flowable.app.mapper.AuthenticationMapper;
 import org.zipper.flowable.app.mapper.ProcessMapper;
+import org.zipper.flowable.app.mapper.RoleMapper;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.exception.HelperException;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +46,12 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Resource
     private ProcessMapper processMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
+    private AuthenticationMapper authenticationMapper;
 
 
     /**
@@ -76,7 +90,7 @@ public class ProcessServiceImpl implements ProcessService {
             boolean allowMember = parameter.getAllowMember() != null && parameter.getAllowMember().size() > 0;
             boolean allowDept = parameter.getAllowDept() != null && parameter.getAllowDept().size() > 0;
             LOGGER.debug("allowRole:{},allowMember:{},allowDept:{}", allowRole, allowMember, allowDept);
-            if (!(allowRole && allowMember && allowDept)) {
+            if (!allowRole && !allowMember && !allowDept) {
                 parameter.setAllowAnybody(true);
                 LOGGER.warn("检查流程:{} 未设置发起人范围，将默认设置为任何人可发起", parameter.getName());
             }
@@ -191,7 +205,27 @@ public class ProcessServiceImpl implements ProcessService {
             }).collect(Collectors.toList()), ",");
         }
 
-        return StringUtils.join(allowInitiator, ",");
+        return StringUtils.join(Arrays.stream(allowInitiator)
+                .filter(l-> l!=null && !l.equals("")).collect(Collectors.toList()), ",");
+    }
+
+    public List<Process> queryMyAllowInitProcess(String username) {
+        Member member = authenticationMapper.selectByUsernameEqual(username);
+        if (member == null) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "当前用户不存在，请确认登录状态");
+        }
+
+        List<String> identities = new ArrayList<>();
+        identities.add(String.format("%s_%s", AllowInitiatorType.MEMBER.name(), member.getId()));
+
+        List<Role> roles = roleMapper.selectByUserId(String.valueOf(member.getId()));
+        for (Role role : roles) {
+            identities.add(String.format("%s_%s", AllowInitiatorType.ROLE.name(), role.getId()));
+        }
+
+        LOGGER.debug("当前用户身份有：{}", StringUtils.join(identities));
+
+        return processMapper.selectByAllowInitiator(identities);
 
     }
 }

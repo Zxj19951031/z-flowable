@@ -43,6 +43,9 @@ public class ProcessSaveParameter {
 
 
     public Boolean getAllowAnybody() {
+        if(allowAnybody==null){
+            allowAnybody = false;
+        }
         return allowAnybody;
     }
 

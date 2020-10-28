@@ -71,5 +71,23 @@ public interface ProcessService {
      */
     boolean deploy(int id);
 
+
+    /**
+     * 获取可以发起该流程的所有规则
+     *
+     * @param anybody     是否任何人可发起 ANYBODY
+     * @param roles       某些角色可发起流程 ROLE_1,ROLE_2
+     * @param members     某些人可发起流程 MEMBER_1,MEMBER_2
+     * @param departments 某些部门可发起流程 DEPT_1,DEPT_2
+     * @return allowInitiators
+     */
     String buildAllowInitiator(boolean anybody, List<String> roles, List<String> members, List<String> departments);
+
+    /**
+     * 查询某个用户可发起的流程列表
+     *
+     * @param userId 用户编号
+     * @return 流程列表
+     */
+    List<Process> queryMyAllowInitProcess(String userId);
 }

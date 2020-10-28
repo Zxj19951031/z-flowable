@@ -57,15 +57,24 @@ public interface ProcessMapper {
      * 更新发布状态
      *
      * @param processStatus 发布状态 {@link ProcessStatus}
-     * @param id        记录编号
+     * @param id            记录编号
      * @return 受影响行数
      */
     int updateDeployStatus(@Param("processStatus") ProcessStatus processStatus, @Param("id") Integer id);
 
     /**
      * 通过Key查询记录数，不区分status
+     *
      * @param key processKey
      * @return cnt
      */
     int selectCntByKey(String key);
+
+    /**
+     * 查询符合当前发起身份的流程列表
+     *
+     * @param identities 身份特征
+     * @return 流程列表
+     */
+    List<Process> selectByAllowInitiator(@Param("identities") List<String> identities);
 }
