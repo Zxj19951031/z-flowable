@@ -1,11 +1,13 @@
 package org.zipper.flowable.app.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zipper.flowable.app.constant.enums.AllowInitiatorType;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
@@ -20,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author zhuxj
@@ -37,13 +40,6 @@ public class ProcessServiceImpl implements ProcessService {
     private ProcessMapper processMapper;
 
 
-    public int save(ProcessSaveParameter parameter) {
-        if (parameter == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "ProcessSaveParameter cannot be null");
-        }
-        return save(parameter.getId(), parameter.getName(), parameter.getXml(), parameter.getFormId());
-    }
-
     /**
      * 新增流程：
      * 流程的关键字不可以于现有的流程的关键字重复，因为flowable通过关键字去区分流程定义
@@ -55,68 +51,78 @@ public class ProcessServiceImpl implements ProcessService {
      * 同理更新时key是不让改动的，否则就会被flowable视为另一个流程，造成数据错乱
      * 当让对于未发布过的流程进行更新是可以允许key重复的，但是发布时还是校验key不冲突，所以在更新是就做了限制
      *
-     * @param id   流程定义记录ID
-     * @param name 流程名称，非空
-     * @param xml  流程bpmn2.0标准内容
+     * @param parameter {@link ProcessSaveParameter}
      * @return ID of 流程定义
      */
-    public int save(Integer id, String name, String xml, Integer formId) {
-
-        if (name == null || "".equals(name)) {
+    public int save(ProcessSaveParameter parameter) {
+        if (parameter == null) {
+            throw HelperException.newException(SystemError.PARAMETER_ERROR, "ProcessSaveParameter cannot be null");
+        }
+        if (parameter.getName() == null || "".equals(parameter.getName())) {
             throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程名称不可为空，请输入正确的流程名称");
         }
-        if (xml == null || "".equals(xml)) {
+        if (parameter.getXml() == null || "".equals(parameter.getXml())) {
             throw HelperException.newException(SystemError.PARAMETER_ERROR, "xml of process cannot be null or empty");
         }
-        if (formId == null) {
+        if (parameter.getFormId() == null) {
             throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程表单未绑定，请进行表单绑定");
         }
 
+        /*
+            如果都没有设置发起人限制则默认是任何人
+         */
+        if (!parameter.getAllowAnybody()) {
+            boolean allowRole = parameter.getAllowRole() != null && parameter.getAllowRole().size() > 0;
+            boolean allowMember = parameter.getAllowMember() != null && parameter.getAllowMember().size() > 0;
+            boolean allowDept = parameter.getAllowDept() != null && parameter.getAllowDept().size() > 0;
+            LOGGER.debug("allowRole:{},allowMember:{},allowDept:{}", allowRole, allowMember, allowDept);
+            if (!(allowRole && allowMember && allowDept)) {
+                parameter.setAllowAnybody(true);
+                LOGGER.warn("检查流程:{} 未设置发起人范围，将默认设置为任何人可发起", parameter.getName());
+            }
+        }
+
+
         Process process = null;
-        String key = flowableService.getMainProcessKey(xml);
-        if (id == null) {
+        String key = flowableService.getMainProcessKey(parameter.getXml());
+        if (parameter.getId() == null) {
             if (processMapper.selectCntByKey(key) > 0) {
                 throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程关键字已存在，请重新填写");
             }
 
-            LOGGER.info("新增流程{}", name);
-            LOGGER.debug(xml);
+            LOGGER.info("新增流程{}", parameter.getName());
+            LOGGER.debug(parameter.getXml());
 
-            process = new Process(name, key, xml, formId);
+            process = new Process(parameter.getName(), key, parameter.getXml(), parameter.getFormId());
+            process.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
             processMapper.insert(process);
         } else {
-            LOGGER.info("更新流程{}", name);
-            LOGGER.debug(xml);
+            LOGGER.info("更新流程{}", parameter.getName());
+            LOGGER.debug(parameter.getXml());
 
-            process = processMapper.selectById(id);
+            process = processMapper.selectById(parameter.getId());
             if (process == null) {
                 throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
             }
             if (!process.getProcessKey().equals(key)) {
                 throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程关键字不可修改");
             }
-            process.setName(name);
-            process.setXml(xml);
 
+            process.setName(parameter.getName());
+            process.setXml(parameter.getXml());
+            process.setAllowInitiator(buildAllowInitiator(parameter.getAllowAnybody(), parameter.getAllowRole(), parameter.getAllowMember(), parameter.getAllowDept()));
             processMapper.updateById(process);
         }
 
         return process.getId();
+
     }
 
     @Transactional
     public int saveAndDeploy(ProcessSaveParameter parameter) {
-        if (parameter == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "ProcessSaveParameter cannot be null");
-        }
-        return saveAndDeploy(parameter.getId(), parameter.getName(), parameter.getXml(), parameter.getFormId());
-    }
-
-    @Transactional
-    public int saveAndDeploy(Integer id, String name, String xml, Integer formId) {
-        int result = save(id, name, xml, formId);
+        int id = save(parameter);
         deploy(id);
-        return result;
+        return id;
     }
 
     public List<Process> list(ProcessQueryParameter parameter) {
@@ -142,14 +148,12 @@ public class ProcessServiceImpl implements ProcessService {
         return cnt;
     }
 
-    public boolean initiate(String initiator, String processKey, Map<String, Object> variables) {
+    public void initiate(String initiator, String processKey, Map<String, Object> variables) {
 
         ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
         LOGGER.debug("用户[{}]发起流程 [{}] 成功", initiator, instance.getName());
-        return true;
     }
 
-    @Override
     @Transactional
     public boolean deploy(int id) {
         LOGGER.info("发布流程{}", id);
@@ -162,4 +166,32 @@ public class ProcessServiceImpl implements ProcessService {
         return deployment != null;
     }
 
+
+    public String buildAllowInitiator(boolean anybody, List<String> roles, List<String> members, List<String> departments) {
+        if (anybody) {
+            return AllowInitiatorType.ANYBODY.name();
+        }
+        String[] allowInitiator = new String[3];
+
+        if (roles != null) {
+            allowInitiator[0] = StringUtils.join(roles.stream().map(r -> {
+                return String.format("%s_%s", AllowInitiatorType.ROLE.name(), r);
+            }).collect(Collectors.toList()), ",");
+        }
+
+        if (members != null) {
+            allowInitiator[1] = StringUtils.join(members.stream().map(m -> {
+                return String.format("%s_%s", AllowInitiatorType.MEMBER.name(), m);
+            }).collect(Collectors.toList()), ",");
+        }
+
+        if (departments != null) {
+            allowInitiator[2] = StringUtils.join(departments.stream().map(d -> {
+                return String.format("%s_%s", AllowInitiatorType.DEPT.name(), d);
+            }).collect(Collectors.toList()), ",");
+        }
+
+        return StringUtils.join(allowInitiator, ",");
+
+    }
 }

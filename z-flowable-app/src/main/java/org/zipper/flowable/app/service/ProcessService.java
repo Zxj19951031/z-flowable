@@ -28,33 +28,12 @@ public interface ProcessService {
     int save(ProcessSaveParameter processSaveParameter);
 
     /**
-     * 保存流程定义
-     *
-     * @param id   流程定义记录ID
-     * @param name 流程名称，非空
-     * @param xml  流程bpmn2.0标准内容
-     * @return id
-     */
-    int save(Integer id, String name, String xml, Integer formId);
-
-
-    /**
      * 保存并发布流程
      *
      * @param parameter {@link ProcessSaveParameter} 参数
      * @return id
      */
     int saveAndDeploy(ProcessSaveParameter parameter);
-
-    /**
-     * 保存并发布流程
-     *
-     * @param id   流程定义记录ID
-     * @param name 流程名称，非空
-     * @param xml  流程bpmn2.0标准内容
-     * @return id
-     */
-    int saveAndDeploy(Integer id, String name, String xml, Integer formId);
 
     /**
      * 查看流程列表
@@ -80,9 +59,8 @@ public interface ProcessService {
      * @param initiator  发起人
      * @param processKey 流程定义key即xml中process标签的id属性
      * @param variables  流程变量
-     * @return true or false
      */
-    boolean initiate(String initiator, String processKey, Map<String, Object> variables);
+    void initiate(String initiator, String processKey, Map<String, Object> variables);
 
 
     /**
@@ -92,4 +70,6 @@ public interface ProcessService {
      * @return
      */
     boolean deploy(int id);
+
+    String buildAllowInitiator(boolean anybody, List<String> roles, List<String> members, List<String> departments);
 }

@@ -3,11 +3,15 @@ package org.zipper.flowable.app;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
 @EnableOpenApi
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+       "org.zipper.flowable.app",
+       "org.zipper.helper.web.cross"
+})
 @MapperScan({"org.zipper.flowable.app.mapper"})
 @ImportResource("classpath:restApi.xml")
 public class FlowableApplication {

@@ -34,11 +34,11 @@ public class MyProcessController {
      */
     @PostMapping(value = "initiate")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_init')")
-    public ResponseEntity<Boolean> initiate(@RequestBody ProcessInitiateParameter parameter) {
+    public ResponseEntity<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        boolean result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
-        return ResponseEntity.success(result);
+        this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
+        return ResponseEntity.success("success");
     }
 
     /**
@@ -54,7 +54,7 @@ public class MyProcessController {
     public ResponseEntity minePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
-        String initiator = "zhuxj";
+        String initiator = AuthenticationUtil.getAuthentication().getName();
         this.flowableService.queryMine(pageNum, pageSize, initiator);
         return ResponseEntity.success(null);
     }

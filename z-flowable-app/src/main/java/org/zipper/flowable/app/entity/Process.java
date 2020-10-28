@@ -17,6 +17,7 @@ public class Process {
     private String xml;
     private ProcessStatus deployStatus;
     private LocalDateTime deployTime;
+    private String allowInitiator;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Status status;
@@ -33,6 +34,15 @@ public class Process {
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
         this.status = Status.VALID;
+    }
+
+
+    public String getAllowInitiator() {
+        return allowInitiator;
+    }
+
+    public void setAllowInitiator(String allowInitiator) {
+        this.allowInitiator = allowInitiator;
     }
 
     public Integer getFormId() {
