@@ -50,12 +50,10 @@ public interface FlowableService {
     /**
      * 查询某人的代办任务实例编号
      *
-     * @param pageNum  页码
-     * @param pageSize 单页大小
-     * @param user     任务受理人或候选人
+     * @param user 任务受理人或候选人
      * @return list of task
      */
-    public List<Task> queryTodo(int pageNum, int pageSize, String user);
+    public List<Task> queryTodo(String user);
 
 
     /**

@@ -1,9 +1,12 @@
 package org.zipper.flowable.app.service;
 
 
+import org.flowable.task.api.Task;
+import org.zipper.flowable.app.dto.parameter.InstanceQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
 import org.zipper.flowable.app.entity.MyProcess;
+import org.zipper.flowable.app.entity.MyProcessInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,12 +58,13 @@ public interface ProcessService {
 
     /**
      * 发起流程
-     *  @param initiator  发起人
+     *
+     * @param initiator  发起人
      * @param processKey 流程定义key即xml中process标签的id属性
      * @param variables  流程变量
      * @return
      */
-    int initiate(String initiator, String processKey, Map<String, Object> variables);
+    String initiate(String initiator, String processKey, Map<String, Object> variables);
 
 
     /**
@@ -92,11 +96,27 @@ public interface ProcessService {
     List<MyProcess> queryMyAllowInitProcess(String userId);
 
     /**
-     * 查询我发起的
-     * @param pageNum 分页参数，页码
-     * @param pageSize 分页参数，单页大小
-     * @param initiator 发起人
+     * 查询某人发起的审批
+     *
+     * @param parameter 发起人
      * @return list of process instance
      */
-    List queryMine(Integer pageNum, Integer pageSize, String initiator);
+    List<MyProcessInstance> queryMine(InstanceQueryParameter parameter);
+
+    /**
+     * 保存流程实例至草稿态
+     *
+     * @param initiator  发起人
+     * @param processKey 流程定义关键字
+     * @param variables  流程发起变量
+     * @return id of draft
+     */
+    int saveDraft(String initiator, String processKey, Map<String, Object> variables);
+
+    /**
+     * 将flowable中查询出来的待办任务进行包装成流程实例记录
+     * @param tasks 待办任务
+     * @return list of process instance
+     */
+    List<MyProcessInstance> transformTasks(List<Task> tasks);
 }

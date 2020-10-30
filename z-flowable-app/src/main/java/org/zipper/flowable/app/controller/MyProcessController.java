@@ -1,10 +1,15 @@
 package org.zipper.flowable.app.controller;
 
+import com.github.pagehelper.PageHelper;
+import org.flowable.task.api.Task;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.zipper.flowable.app.constant.enums.InstanceStage;
+import org.zipper.flowable.app.dto.parameter.InstanceQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessInitiateParameter;
 import org.zipper.flowable.app.dto.parameter.TaskFinishParameter;
 import org.zipper.flowable.app.entity.MyProcess;
+import org.zipper.flowable.app.entity.MyProcessInstance;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
@@ -43,6 +48,20 @@ public class MyProcessController {
     }
 
     /**
+     * 流程实例保存至草稿态
+     * 权限上只要能访问"我的流程"且有"发起流程"权限即可存至草稿
+     *
+     * @return id of draft
+     */
+    @PostMapping(value = "/draft/save")
+    @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
+    public ResponseEntity<Integer> saveDraft(@RequestBody ProcessInitiateParameter parameter) {
+        String initiator = AuthenticationUtil.getAuthentication().getName();
+        int result = this.processService.saveDraft(initiator, parameter.getProcessKey(), parameter.getVariables());
+        return ResponseEntity.success(result);
+    }
+
+    /**
      * 发起流程
      *
      * @param parameter 流程变量
@@ -50,9 +69,9 @@ public class MyProcessController {
      */
     @PostMapping(value = "initiate")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<Integer> initiate(@RequestBody ProcessInitiateParameter parameter) {
+    public ResponseEntity<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        int result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
+        String result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
         return ResponseEntity.success(result);
     }
 
@@ -64,14 +83,17 @@ public class MyProcessController {
      * @param pageNum  页码
      * @return list of my instance
      */
-    @PostMapping(value = "mine/list")
+    @GetMapping(value = "mine/list")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_query')")
-    public ResponseEntity minePage(@RequestParam Integer pageSize,
-                                   @RequestParam Integer pageNum) {
+    public ResponseEntity<List<MyProcessInstance>> minePage(@RequestParam Integer pageSize,
+                                                            @RequestParam Integer pageNum,
+                                                            @RequestParam(required = false) InstanceStage stage) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        this.processService.queryMine(pageNum, pageSize, initiator);
-        return ResponseEntity.success(null);
+        InstanceQueryParameter parameter = new InstanceQueryParameter(initiator, stage);
+        PageHelper.startPage(pageNum, pageSize);
+        List<MyProcessInstance> instances = this.processService.queryMine(parameter);
+        return ResponseEntity.success(instances);
     }
 
     /**
@@ -84,11 +106,14 @@ public class MyProcessController {
      */
     @PostMapping(value = "todo/list")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_todo_query')")
-    public ResponseEntity todoPage(@RequestParam Integer pageSize,
-                                   @RequestParam Integer pageNum) {
-        String user = "zhuxj";
-        this.flowableService.queryTodo(pageNum, pageSize, user);
-        return ResponseEntity.success(null);
+    public ResponseEntity<List<MyProcessInstance>> todoPage(@RequestParam Integer pageSize,
+                                                            @RequestParam Integer pageNum) {
+
+        String initiator = AuthenticationUtil.getAuthentication().getName();
+        List<Task> tasks = this.flowableService.queryTodo(initiator);
+        PageHelper.startPage(pageSize, pageNum);
+        List<MyProcessInstance> instances = this.processService.transformTasks(tasks);
+        return ResponseEntity.success(instances);
     }
 
 

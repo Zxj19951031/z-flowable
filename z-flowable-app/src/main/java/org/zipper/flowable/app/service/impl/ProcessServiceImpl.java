@@ -2,16 +2,19 @@ package org.zipper.flowable.app.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zipper.flowable.app.constant.enums.AllowInitiatorType;
+import org.zipper.flowable.app.constant.enums.InstanceStage;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
 import org.zipper.flowable.app.constant.errors.SystemError;
+import org.zipper.flowable.app.dto.parameter.InstanceQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessSaveParameter;
 import org.zipper.flowable.app.entity.Member;
@@ -27,10 +30,7 @@ import org.zipper.flowable.app.service.ProcessService;
 import org.zipper.helper.exception.HelperException;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -56,7 +56,6 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Resource
     private ProcessInstanceMapper processInstanceMapper;
-
 
     /**
      * 新增流程：
@@ -178,15 +177,25 @@ public class ProcessServiceImpl implements ProcessService {
         return cnt;
     }
 
+    /**
+     * 发起流程实例，针对 flow_process_instance 表的维护交由流程的启动监听器去实现
+     * 否则此处不太好保证顺序，可能会有流程启动后 flow_process_instance 表中记录尚没有新建
+     * 导致流程去更新stage状态时失败；
+     * 如果放在 {@code flowableService.startProcess} 之前去新增记录的化此时并不知道关联的
+     * flowable中process_instance_id，又要在{@code flowableService.startProcess}之后
+     * 去更新这个记录造成可能会造成死锁。
+     *
+     * @param initiator  发起人
+     * @param processKey 流程定义key即xml中process标签的id属性
+     * @param variables  流程变量
+     * @return flowable process instance id
+     */
     @Transactional
-    public int initiate(String initiator, String processKey, Map<String, Object> variables) {
+    public String initiate(String initiator, String processKey, Map<String, Object> variables) {
         LOGGER.debug("用户 [{}] 发起流程 [{}] 参数 [{}]", initiator, processKey,
                 JSONObject.toJSONString(variables, true));
         ProcessInstance instance = this.flowableService.startProcess(initiator, processKey, variables);
-        MyProcessInstance myInstance = new MyProcessInstance(instance.getProcessInstanceId());
-        this.processInstanceMapper.insert(myInstance);
-        LOGGER.info("用户 [{}] 发起流程 [{}] 成功", initiator, instance.getName());
-        return myInstance.getId();
+        return instance.getProcessInstanceId();
     }
 
     public String buildAllowInitiator(boolean anybody, List<String> roles, List<String> members, List<String> departments) {
@@ -237,12 +246,26 @@ public class ProcessServiceImpl implements ProcessService {
 
     }
 
-    public List queryMine(Integer pageNum, Integer pageSize, String initiator) {
+    public List<MyProcessInstance> queryMine(InstanceQueryParameter parameter) {
+        return this.processInstanceMapper.select(parameter);
+    }
 
-        List<HistoricProcessInstance> historicProcessInstances =
-                this.flowableService.queryMine(pageNum, pageSize, initiator);
+    public int saveDraft(String initiator, String processKey, Map<String, Object> variables) {
+        MyProcessInstance instance = new MyProcessInstance(initiator, processKey, variables);
+        instance.setStage(InstanceStage.DRAFT);
+        this.processInstanceMapper.insert(instance);
+        LOGGER.info("用户 [{}] 暂存流程 [{}] 至草稿", initiator, processKey);
+        return instance.getId();
+    }
 
+    public List<MyProcessInstance> transformTasks(List<Task> tasks) {
+        if (tasks == null || tasks.size() == 0) {
+            LOGGER.warn("tasks is null or empty");
+            return null;
+        }
 
-        return null;
+        Set<String> instanceIds = tasks.stream().map(TaskInfo::getProcessInstanceId).collect(Collectors.toSet());
+        LOGGER.info("等待包装的任务列表长度为 [{}],对应流程实例数 [{}]", tasks.size(), instanceIds.size());
+        return this.processInstanceMapper.selectInInstanceIds(instanceIds);
     }
 }

@@ -3,7 +3,24 @@
 <mapper namespace="org.zipper.flowable.app.mapper.ProcessInstanceMapper">
     <insert id="insert" parameterType="org.zipper.flowable.app.entity.MyProcessInstance" useGeneratedKeys="true"
             keyProperty="id">
-        insert into flow_process_instance(instance_id, stage, status)
-        values (#{instanceId}, #{stage}, #{status})
+        insert into flow_process_instance(process_key, instance_id, initiator, stage, variables, start_time, status)
+        values (#{processKey}, #{instanceId}, #{initiator}, #{stage}, #{variables}, #{startTime}, #{status})
     </insert>
+    <select id="select" resultType="org.zipper.flowable.app.entity.MyProcessInstance">
+        select * from flow_process_instance where status = 0
+        <if test="initiator!=null and initiator!=''">
+            and initiator = #{initiator}
+        </if>
+        <if test="stage!=null">
+            and stage = #{stage}
+        </if>
+        order by update_time desc
+    </select>
+    <select id="selectInInstanceIds" resultType="org.zipper.flowable.app.entity.MyProcessInstance">
+        select * from flow_process_instance where status = 0 and instance_id in
+        <foreach collection="instanceIds" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        order by start_time desc
+    </select>
 </mapper>

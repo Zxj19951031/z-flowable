@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.zipper.flowable.app.constant.FlowableVariableKey;
 import org.zipper.flowable.app.constant.errors.FlowableError;
-import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.helper.exception.HelperException;
 
@@ -85,14 +84,15 @@ public class FlowableServiceImpl implements FlowableService {
                 .listPage(pageSize * pageNum, pageSize);
     }
 
+    /**
+     * @param user 任务受理人或候选人
+     * @return list of task
+     */
     @Override
-    public List<Task> queryTodo(int pageNum, int pageSize, String user) {
+    public List<Task> queryTodo(String user) {
         TaskQuery query = this.taskService.createTaskQuery();
 
-        return query.taskCandidateOrAssigned(user)
-                .orderByTaskCreateTime()
-                .desc()
-                .listPage(pageSize * pageNum, pageSize);
+        return query.taskCandidateOrAssigned(user).list();
     }
 
     @Override
@@ -126,10 +126,11 @@ public class FlowableServiceImpl implements FlowableService {
             BpmnXMLConverter converter = new BpmnXMLConverter();
             BpmnModel model = converter.convertToBpmnModel(streamSource, true, true);
             return model.getMainProcess().getId();
-        }catch (Throwable throwable){
-            LOGGER.error("解析xml至BpmnModel异常",throwable);
-            throw HelperException.newException(FlowableError.XML_FORMAT_ERROR,"流程配置有误，请检查");
+        } catch (Throwable throwable) {
+            LOGGER.error("解析xml至BpmnModel异常", throwable);
+            throw HelperException.newException(FlowableError.XML_FORMAT_ERROR, "流程配置有误，请检查");
         }
     }
+
 
 }
