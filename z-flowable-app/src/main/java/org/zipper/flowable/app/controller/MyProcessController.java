@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import org.flowable.task.api.Task;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.zipper.flowable.app.constant.SystemResponse;
 import org.zipper.flowable.app.constant.enums.InstanceStage;
 import org.zipper.flowable.app.dto.parameter.InstanceQueryParameter;
 import org.zipper.flowable.app.dto.parameter.ProcessInitiateParameter;
@@ -13,7 +14,6 @@ import org.zipper.flowable.app.entity.MyProcessInstance;
 import org.zipper.flowable.app.security.AuthenticationUtil;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
-import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -42,9 +42,9 @@ public class MyProcessController {
      */
     @GetMapping(value = "/allow/init/list")
     @PreAuthorize(value = "hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<List<MyProcess>> defineList() {
+    public SystemResponse<List<MyProcess>> defineList() {
         String initiator = AuthenticationUtil.getAuthentication().getName();
-        return ResponseEntity.success(processService.queryMyAllowInitProcess(initiator));
+        return SystemResponse.success(processService.queryMyAllowInitProcess(initiator));
     }
 
     /**
@@ -55,10 +55,10 @@ public class MyProcessController {
      */
     @PostMapping(value = "/draft/save")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<Integer> saveDraft(@RequestBody ProcessInitiateParameter parameter) {
+    public SystemResponse<Integer> saveDraft(@RequestBody ProcessInitiateParameter parameter) {
         String initiator = AuthenticationUtil.getAuthentication().getName();
         int result = this.processService.saveDraft(initiator, parameter.getProcessKey(), parameter.getVariables());
-        return ResponseEntity.success(result);
+        return SystemResponse.success(result);
     }
 
     /**
@@ -69,10 +69,10 @@ public class MyProcessController {
      */
     @PostMapping(value = "initiate")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_init')")
-    public ResponseEntity<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
+    public SystemResponse<String> initiate(@RequestBody ProcessInitiateParameter parameter) {
         String initiator = AuthenticationUtil.getAuthentication().getName();
         String result = this.processService.initiate(initiator, parameter.getProcessKey(), parameter.getVariables());
-        return ResponseEntity.success(result);
+        return SystemResponse.success(result);
     }
 
     /**
@@ -85,7 +85,7 @@ public class MyProcessController {
      */
     @GetMapping(value = "mine/list")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_mine_query')")
-    public ResponseEntity<List<MyProcessInstance>> minePage(@RequestParam Integer pageSize,
+    public SystemResponse<List<MyProcessInstance>> minePage(@RequestParam Integer pageSize,
                                                             @RequestParam Integer pageNum,
                                                             @RequestParam(required = false) InstanceStage stage) {
 
@@ -93,11 +93,13 @@ public class MyProcessController {
         InstanceQueryParameter parameter = new InstanceQueryParameter(initiator, stage);
         PageHelper.startPage(pageNum, pageSize);
         List<MyProcessInstance> instances = this.processService.queryMine(parameter);
-        return ResponseEntity.success(instances);
+        return SystemResponse.success(instances);
     }
 
     /**
-     * 我的代办
+     * 我的代办任务查询，当流程实例有并行网关且存在两条以上的路径中设置了同一个委托人，那么在同一时刻
+     * 就会存在一个流程实例多个任务的情况，所以列表展示不能按流程实例去作为基本单位做展示，而是要对flowable的
+     * Task列表进行包装。
      * 分页查询
      *
      * @param pageSize 单页大小
@@ -106,14 +108,14 @@ public class MyProcessController {
      */
     @PostMapping(value = "todo/list")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_todo_query')")
-    public ResponseEntity<List<MyProcessInstance>> todoPage(@RequestParam Integer pageSize,
+    public SystemResponse<List<MyProcessInstance>> todoPage(@RequestParam Integer pageSize,
                                                             @RequestParam Integer pageNum) {
 
         String initiator = AuthenticationUtil.getAuthentication().getName();
         List<Task> tasks = this.flowableService.queryTodo(initiator);
         PageHelper.startPage(pageSize, pageNum);
         List<MyProcessInstance> instances = this.processService.transformTasks(tasks);
-        return ResponseEntity.success(instances);
+        return SystemResponse.success(instances);
     }
 
 
@@ -127,12 +129,12 @@ public class MyProcessController {
      */
     @PostMapping(value = "done/list")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_done_query')")
-    public ResponseEntity donePage(@RequestParam Integer pageSize,
+    public SystemResponse donePage(@RequestParam Integer pageSize,
                                    @RequestParam Integer pageNum) {
 
-        String user = "zhuxj";
-        this.flowableService.queryDone(pageNum, pageSize, user);
-        return ResponseEntity.success(null);
+        String initiator = AuthenticationUtil.getAuthentication().getName();
+        this.flowableService.queryDone(pageNum, pageSize, initiator);
+        return SystemResponse.success(null);
     }
 
     /**
@@ -144,10 +146,10 @@ public class MyProcessController {
      */
     @PostMapping(value = "finish")
     @PreAuthorize(value = "hasAuthority('myProcess') and hasAuthority('myProcess_todo_finish')")
-    public ResponseEntity finish(@RequestBody TaskFinishParameter parameter) {
+    public SystemResponse finish(@RequestBody TaskFinishParameter parameter) {
 
         String user = "zhuxj";
         this.flowableService.finishTask(user, parameter.getTaskId(), parameter.getLocalVariables());
-        return ResponseEntity.success(null);
+        return SystemResponse.success(null);
     }
 }

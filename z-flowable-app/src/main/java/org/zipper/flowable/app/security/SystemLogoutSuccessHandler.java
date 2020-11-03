@@ -3,7 +3,7 @@ package org.zipper.flowable.app.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.zipper.helper.web.response.ResponseEntity;
+import org.zipper.flowable.app.constant.SystemResponse;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -27,7 +27,7 @@ public class SystemLogoutSuccessHandler implements LogoutSuccessHandler {
         response.setContentType("application/json;charset=utf-8");
         //删除token
         daoUserDetailService.removeToken(authentication.getName());
-        response.getWriter().write(ResponseEntity.success("登出成功").toString());
+        response.getWriter().write(SystemResponse.success("登出成功").toString());
         response.getWriter().flush();
         response.getWriter().close();
     }

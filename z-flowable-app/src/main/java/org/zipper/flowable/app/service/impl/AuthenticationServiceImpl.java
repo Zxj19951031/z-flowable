@@ -2,11 +2,11 @@ package org.zipper.flowable.app.service.impl;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.zipper.flowable.app.constant.SystemException;
 import org.zipper.flowable.app.constant.errors.SystemError;
 import org.zipper.flowable.app.entity.Member;
 import org.zipper.flowable.app.mapper.AuthenticationMapper;
 import org.zipper.flowable.app.service.AuthenticationService;
-import org.zipper.helper.exception.HelperException;
 
 import javax.annotation.Resource;
 
@@ -23,13 +23,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public int signUp(String username, String password) {
         if (username == null || username.equals("")) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "用户名不可为空，请填写正确的用户名");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "用户名不可为空，请填写正确的用户名");
         }
         if (checkUsernameExist(username)) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "用户名已存在，请重新填写");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "用户名已存在，请重新填写");
         }
         if (password == null || password.equals("")) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "密码不可为空，请填写正确的密码");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "密码不可为空，请填写正确的密码");
         }
 
 

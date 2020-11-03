@@ -79,12 +79,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else if (!permissiveRequest(httpServletRequest)) {
                 SecurityContextHolder.clearContext();
                 failureHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, exception);
-
+            } else {
+                filterChain.doFilter(httpServletRequest, httpServletResponse);
             }
 
-        }
+        } else {
 
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+        }
 
 
     }

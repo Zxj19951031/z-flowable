@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zipper.flowable.app.constant.SystemException;
 import org.zipper.flowable.app.constant.enums.AllowInitiatorType;
 import org.zipper.flowable.app.constant.enums.InstanceStage;
 import org.zipper.flowable.app.constant.enums.ProcessStatus;
@@ -27,7 +28,6 @@ import org.zipper.flowable.app.mapper.ProcessMapper;
 import org.zipper.flowable.app.mapper.RoleMapper;
 import org.zipper.flowable.app.service.FlowableService;
 import org.zipper.flowable.app.service.ProcessService;
-import org.zipper.helper.exception.HelperException;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -73,16 +73,16 @@ public class ProcessServiceImpl implements ProcessService {
      */
     public int save(ProcessSaveParameter parameter) {
         if (parameter == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "ProcessSaveParameter cannot be null");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "ProcessSaveParameter cannot be null");
         }
         if (parameter.getName() == null || "".equals(parameter.getName())) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程名称不可为空，请输入正确的流程名称");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "流程名称不可为空，请输入正确的流程名称");
         }
         if (parameter.getXml() == null || "".equals(parameter.getXml())) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "xml of process cannot be null or empty");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "xml of process cannot be null or empty");
         }
         if (parameter.getFormId() == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程表单未绑定，请进行表单绑定");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "流程表单未绑定，请进行表单绑定");
         }
 
         /*
@@ -104,7 +104,7 @@ public class ProcessServiceImpl implements ProcessService {
         String key = flowableService.getMainProcessKey(parameter.getXml());
         if (parameter.getId() == null) {
             if (processMapper.selectCntByKey(key) > 0) {
-                throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程关键字已存在，请重新填写");
+                throw SystemException.newException(SystemError.PARAMETER_ERROR, "流程关键字已存在，请重新填写");
             }
 
             LOGGER.info("新增流程{}", parameter.getName());
@@ -119,10 +119,10 @@ public class ProcessServiceImpl implements ProcessService {
 
             myProcess = processMapper.selectById(parameter.getId());
             if (myProcess == null) {
-                throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
+                throw SystemException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
             }
             if (!myProcess.getProcessKey().equals(key)) {
-                throw HelperException.newException(SystemError.PARAMETER_ERROR, "流程关键字不可修改");
+                throw SystemException.newException(SystemError.PARAMETER_ERROR, "流程关键字不可修改");
             }
 
             myProcess.setName(parameter.getName());
@@ -147,7 +147,7 @@ public class ProcessServiceImpl implements ProcessService {
         LOGGER.info("发布流程{}", id);
         MyProcess myProcess = processMapper.selectById(id);
         if (myProcess == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "该流程不存在，请确认");
         }
         Deployment deployment = this.flowableService.deploy(myProcess.getName(), myProcess.getXml());
         processMapper.updateDeployStatus(ProcessStatus.PUBLISHED, id);
@@ -164,7 +164,7 @@ public class ProcessServiceImpl implements ProcessService {
     public int delete(ArrayList<Integer> ids) {
 
         if (ids == null || ids.size() == 0) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "请至少选择一个待删除的流程");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "请至少选择一个待删除的流程");
         }
         /*
             删除流程定义只是将记录删除
@@ -229,7 +229,7 @@ public class ProcessServiceImpl implements ProcessService {
     public List<MyProcess> queryMyAllowInitProcess(String username) {
         Member member = authenticationMapper.selectByUsernameEqual(username);
         if (member == null) {
-            throw HelperException.newException(SystemError.PARAMETER_ERROR, "当前用户不存在，请确认登录状态");
+            throw SystemException.newException(SystemError.PARAMETER_ERROR, "当前用户不存在，请确认登录状态");
         }
 
         List<String> identities = new ArrayList<>();

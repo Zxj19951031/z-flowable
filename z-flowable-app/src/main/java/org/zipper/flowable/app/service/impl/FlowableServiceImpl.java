@@ -2,6 +2,9 @@ package org.zipper.flowable.app.service.impl;
 
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.SequenceFlow;
+import org.flowable.bpmn.model.StartEvent;
 import org.flowable.common.engine.impl.util.io.StringStreamSource;
 import org.flowable.engine.*;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -17,11 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.zipper.flowable.app.constant.FlowableVariableKey;
+import org.zipper.flowable.app.constant.SystemException;
 import org.zipper.flowable.app.constant.errors.FlowableError;
 import org.zipper.flowable.app.service.FlowableService;
-import org.zipper.helper.exception.HelperException;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,7 +65,7 @@ public class FlowableServiceImpl implements FlowableService {
                 .latestVersion()
                 .singleResult();
         if (definition == null) {
-            throw HelperException.newException(FlowableError.PROCESS_DEFINITION_NOT_EXIST, "流程尚未部署");
+            throw SystemException.newException(FlowableError.PROCESS_DEFINITION_NOT_EXIST, "流程尚未部署");
         }
 
         variables.put(FlowableVariableKey.INITIATOR, initiator);
@@ -128,7 +132,7 @@ public class FlowableServiceImpl implements FlowableService {
             return model.getMainProcess().getId();
         } catch (Throwable throwable) {
             LOGGER.error("解析xml至BpmnModel异常", throwable);
-            throw HelperException.newException(FlowableError.XML_FORMAT_ERROR, "流程配置有误，请检查");
+            throw SystemException.newException(FlowableError.XML_FORMAT_ERROR, "流程配置有误，请检查");
         }
     }
 

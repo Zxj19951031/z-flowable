@@ -3,8 +3,8 @@ package org.zipper.flowable.app.security.jwt;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.zipper.flowable.app.constant.SystemResponse;
 import org.zipper.flowable.app.constant.errors.SystemError;
-import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +18,7 @@ public class JwtAuthenticationFailureHandler implements AuthenticationFailureHan
         SystemError error = SystemError.AUTHENTICATE_ERROR;
         response.setContentType("application/json;charset=utf-8");
         response.setStatus(error.getCode());
-        response.getWriter().write(ResponseEntity.error(error).toString());
+        response.getWriter().write(SystemResponse.error(error).toString());
         response.getWriter().flush();
         response.getWriter().close();
     }

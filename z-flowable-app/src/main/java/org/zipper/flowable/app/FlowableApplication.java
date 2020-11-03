@@ -8,10 +8,7 @@ import org.springframework.context.annotation.ImportResource;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
 @EnableOpenApi
-@SpringBootApplication(scanBasePackages = {
-       "org.zipper.flowable.app",
-       "org.zipper.helper.web.cross"
-})
+@SpringBootApplication
 @MapperScan({"org.zipper.flowable.app.mapper"})
 @ImportResource("classpath:restApi.xml")
 public class FlowableApplication {

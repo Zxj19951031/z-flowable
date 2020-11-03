@@ -4,8 +4,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.zipper.flowable.app.constant.SystemResponse;
 import org.zipper.flowable.app.security.DaoUserDetailService;
-import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -29,7 +29,7 @@ public class FormAuthenticationSuccessHandler implements AuthenticationSuccessHa
         String token = daoUserDetailService.saveToken((UserDetails) authentication.getPrincipal());
         response.setContentType("application/json;charset=utf-8");
         response.setHeader(AUTHORIZATION_HEADER, token);
-        response.getWriter().write(ResponseEntity.success(token).toString());
+        response.getWriter().write(SystemResponse.success(token).toString());
         response.getWriter().flush();
         response.getWriter().close();
     }

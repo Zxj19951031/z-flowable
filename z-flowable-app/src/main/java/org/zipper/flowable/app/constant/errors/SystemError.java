@@ -1,7 +1,5 @@
 package org.zipper.flowable.app.constant.errors;
 
-import org.zipper.helper.exception.IErrorCode;
-
 /**
  * 系统内容异常
  *
@@ -9,12 +7,12 @@ import org.zipper.helper.exception.IErrorCode;
  * @since 2020/10/13
  */
 public enum SystemError implements IErrorCode {
-    PARAMETER_ERROR(400,"参数错误"),
-    NOT_LOGIN(401,"用户未登录"),
+    PARAMETER_ERROR(400, "参数错误"),
+    NOT_LOGIN(401, "用户未登录"),
     AUTHENTICATE_ERROR(401, "认证失败"),
-    USERNAME_PASSWORD_ERROR(401,"用户名或密码错误"),
-    AUTHORIZE_ERROR(403,"鉴权失败，无权访问的资源"),
-    UNKNOWN_ERROR(500, "未知异常");
+    USERNAME_PASSWORD_ERROR(401, "用户名或密码错误"),
+    AUTHORIZE_ERROR(403, "鉴权失败，无权访问的资源"),
+    SERVER_ERROR(500, "系统内部异常");
 
     private final int code;
     private final String description;
@@ -25,7 +23,7 @@ public enum SystemError implements IErrorCode {
     }
 
     @Override
-    public Integer getCode() {
+    public int getCode() {
         return this.code;
     }
 

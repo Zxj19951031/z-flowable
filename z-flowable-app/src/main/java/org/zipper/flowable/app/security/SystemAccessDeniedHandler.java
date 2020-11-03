@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import org.zipper.flowable.app.constant.SystemResponse;
 import org.zipper.flowable.app.constant.errors.SystemError;
-import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ public class SystemAccessDeniedHandler implements AccessDeniedHandler {
         SystemError error = SystemError.AUTHORIZE_ERROR;
         response.setContentType("application/json;charset=utf-8");
         response.setStatus(error.getCode());
-        response.getWriter().write(ResponseEntity.error(error).toString());
+        response.getWriter().write(SystemResponse.error(error).toString());
         response.getWriter().flush();
         response.getWriter().close();
     }

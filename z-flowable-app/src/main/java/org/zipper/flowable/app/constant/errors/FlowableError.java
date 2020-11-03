@@ -1,7 +1,5 @@
 package org.zipper.flowable.app.constant.errors;
 
-import org.zipper.helper.exception.IErrorCode;
-
 /**
  * 流程内容异常
  *
@@ -22,7 +20,7 @@ public enum FlowableError implements IErrorCode {
     }
 
     @Override
-    public Integer getCode() {
+    public int getCode() {
         return this.code;
     }
 

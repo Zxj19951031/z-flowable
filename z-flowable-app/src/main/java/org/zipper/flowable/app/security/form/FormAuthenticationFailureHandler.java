@@ -6,8 +6,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.zipper.flowable.app.constant.SystemResponse;
 import org.zipper.flowable.app.constant.errors.SystemError;
-import org.zipper.helper.web.response.ResponseEntity;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,14 +26,14 @@ public class FormAuthenticationFailureHandler implements AuthenticationFailureHa
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         SystemError error;
         logger.error("登录失败", exception);
-        if(exception instanceof BadCredentialsException){
+        if (exception instanceof BadCredentialsException) {
             error = SystemError.USERNAME_PASSWORD_ERROR;
-        }else {
+        } else {
             error = SystemError.AUTHENTICATE_ERROR;
         }
         response.setContentType("application/json;charset=utf-8");
         response.setStatus(error.getCode());
-        response.getWriter().write(ResponseEntity.error(error).toString());
+        response.getWriter().write(SystemResponse.error(error).toString());
         response.getWriter().flush();
         response.getWriter().close();
     }
